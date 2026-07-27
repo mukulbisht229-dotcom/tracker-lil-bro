@@ -52,7 +52,7 @@
             opacity: 0;
         }
         .expand-section.show {
-            max-height: 200px;
+            max-height: 120px;
             opacity: 1;
         }
     </style>
@@ -69,7 +69,7 @@
 
             <h1 class="text-2xl font-extrabold tracking-tight mb-1">SRCC Trackr</h1>
             <p class="text-xs text-blue-600 dark:text-blue-400 font-semibold italic mb-1">"Consistency is the currency of success."</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-5">Manage your attendance & sync across any device.</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-5">Sync your official college schedule instantly.</p>
             
             <!-- Interactive Mode Switcher -->
             <div class="flex bg-gray-100 dark:bg-gray-900 p-1.5 rounded-2xl mb-6 border border-gray-200/60 dark:border-gray-800">
@@ -78,11 +78,22 @@
             </div>
 
             <div class="space-y-4 text-left">
+                <!-- Expandable Roll Number for Registration Only -->
+                <div id="register-fields" class="expand-section space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">University Roll Number</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-identification-card text-base"></i></span>
+                            <input type="text" id="user-roll-input" placeholder="e.g. 25BC120" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white uppercase" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
                 <div>
                     <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Email Address</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-envelope text-base"></i></span>
-                        <input type="email" id="user-email-input" placeholder="e.g. mukul@srcc.edu" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" autocomplete="off" required>
+                        <input type="email" id="user-email-input" placeholder="e.g. 25bc120@srcc.edu" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" autocomplete="off" required>
                     </div>
                 </div>
 
@@ -93,80 +104,12 @@
                         <input type="password" id="user-pass-input" placeholder="••••••••" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" required>
                     </div>
                 </div>
-
-                <!-- Expandable Fields for Registration Only -->
-                <div id="register-fields" class="expand-section space-y-4">
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">First Name</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-user text-base"></i></span>
-                            <input type="text" id="user-name-input" placeholder="e.g. Mukul" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" autocomplete="off">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Roll Number</label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-identification-card text-base"></i></span>
-                            <input type="text" id="user-roll-input" placeholder="e.g. 23BC229" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" autocomplete="off">
-                        </div>
-                    </div>
-                </div>
                 
                 <button id="get-started-btn" class="w-full mt-3 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/25 btn-transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
                     <span id="login-text">Sign In</span>
                     <i id="login-icon" class="ph ph-arrow-right font-bold text-base"></i>
                 </button>
                 <p id="login-error" class="text-rose-500 text-xs text-center font-medium hide mt-2 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/50"></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- SECTION & COURSE ONBOARDING SCREEN (A to N, VAC, SEC) -->
-    <div id="section-onboarding-screen" class="fixed inset-0 z-50 bg-gray-50/90 dark:bg-gray-900/95 backdrop-blur-md flex flex-col justify-center items-center px-4 hide transition-opacity duration-500">
-        <div class="max-w-md w-full bg-white dark:bg-gray-850 rounded-3xl shadow-2xl p-8 text-center border border-gray-100 dark:border-gray-800/80">
-            <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/40 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-inner">
-                <i class="ph ph-buildings text-3xl text-indigo-600 dark:text-indigo-400"></i>
-            </div>
-            <h1 class="text-2xl font-extrabold tracking-tight mb-1.5">Configure Your Profile</h1>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Select your section (A to N) and course details to customize your semester tracker.</p>
-            
-            <div class="space-y-4 text-left">
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">College Section (A - N)</label>
-                    <select id="onboarding-section-select" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white">
-                        <option value="" disabled selected>Select your section</option>
-                        <option value="Section A">Section A</option>
-                        <option value="Section B">Section B</option>
-                        <option value="Section C">Section C</option>
-                        <option value="Section D">Section D</option>
-                        <option value="Section E">Section E</option>
-                        <option value="Section F">Section F</option>
-                        <option value="Section G">Section G</option>
-                        <option value="Section H">Section H</option>
-                        <option value="Section I">Section I</option>
-                        <option value="Section J">Section J</option>
-                        <option value="Section K">Section K</option>
-                        <option value="Section L">Section L</option>
-                        <option value="Section M">Section M</option>
-                        <option value="Section N">Section N</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">VAC Number / Course Name</label>
-                    <input type="text" id="onboarding-vac-input" placeholder="e.g. VAC-102 (Digital Empowerment)" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white" autocomplete="off">
-                </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">SEC Number / Course Name</label>
-                    <input type="text" id="onboarding-sec-input" placeholder="e.g. SEC-204 (Financial Literacy)" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white" autocomplete="off">
-                </div>
-
-                <button id="save-onboarding-btn" class="w-full mt-3 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/25 btn-transition">
-                    <span>Launch SRCC Trackr</span>
-                    <i class="ph ph-rocket-launch font-bold text-base"></i>
-                </button>
-                <p id="onboarding-error" class="text-rose-500 text-xs text-center font-medium hide mt-2 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/50"></p>
             </div>
         </div>
     </div>
@@ -355,6 +298,43 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // --- THE SRCC DIRECTORY LOOKUP DATABASE ---
+        // This validates the Roll Number and maps their exact groups
+        const studentDirectory = {
+            "25BC120": { name: "Arvin Albert", section: "A", tutGroup: "A2", pracGroup: "AP2", sec: "SEC2", vac: "VAC6" },
+            "25BC310": { name: "Krishna Chandra Dharua", section: "I", tutGroup: "I3", pracGroup: "IP3", sec: "SEC4", vac: "VAC7" },
+            "25BC281": { name: "Kartikey Tiwari", section: "N", tutGroup: "N2", pracGroup: "NP2", sec: "SEC20", vac: "VAC29" },
+            "25BC794": { name: "Vihaan Lamba", section: "L", tutGroup: "L2", pracGroup: "LP2", sec: "SEC3", vac: "VAC14" },
+            "25BC100": { name: "Anurag Saini", section: "A", tutGroup: "A1", pracGroup: "AP1", sec: "SEC8", vac: "VAC6" },
+            "25BC031": { name: "Abhinav", section: "A", tutGroup: "A1", pracGroup: "AP1", sec: "SEC8", vac: "VAC27" }
+            // NOTE: You will insert your full batch JSON list here
+        };
+
+        // --- THE MASTER TIMETABLE DATABASE ---
+        // Maps Section (A-N), Type (Core, Lab, Tut, SEC, VAC) and Sub-Groups
+        const masterTimetable = [
+            // Section A - Core Classes
+            { id: 'm1', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Business Research Methods', type: 'Core', room: 'R35', section: 'A', group: 'ALL' },
+            { id: 'm2', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Core', room: 'R10', section: 'A', group: 'ALL' },
+            { id: 'm3', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R3', section: 'A', group: 'ALL' },
+            // Section A - Labs
+            { id: 'm4', day: 2, time: '08:30 AM - 09:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP1' },
+            { id: 'm5', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP3' },
+            { id: 'm6', day: 2, time: '10:30 AM - 11:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP2' },
+            // Section N - Core Classes
+            { id: 'm7', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R2', section: 'N', group: 'ALL' },
+            { id: 'm8', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'PB3', section: 'N', group: 'ALL' },
+            // Section N - Labs
+            { id: 'm9', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'Library FF', section: 'N', group: 'NP1' },
+            { id: 'm10', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'T48', section: 'N', group: 'NP3' },
+            // SEC & VAC Central Timings (Matched to course codes)
+            { id: 's1', day: 4, time: '08:30 AM - 09:30 AM', subject: 'Digital Marketing (SEC2)', type: 'SEC', room: 'R15', section: 'ALL', courseCode: 'SEC2' },
+            { id: 's2', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Digital Empowerment (VAC6)', type: 'VAC', room: 'R17', section: 'ALL', courseCode: 'VAC6' },
+            { id: 's3', day: 2, time: '03:00 PM - 04:00 PM', subject: 'Innovation & Entrepreneurship (SEC20)', type: 'SEC', room: 'R14', section: 'ALL', courseCode: 'SEC20' },
+            { id: 's4', day: 3, time: '12:30 PM - 01:30 PM', subject: 'The Gita (VAC29)', type: 'VAC', room: 'CL1', section: 'ALL', courseCode: 'VAC29' },
+            { id: 's5', day: 2, time: '02:00 PM - 03:00 PM', subject: 'Basic IT Tools (SEC8)', type: 'SEC', room: 'R5', section: 'ALL', courseCode: 'SEC8' }
+        ];
+
         let currentAuthMode = 'signin'; 
 
         window.setAuthMode = function(mode) {
@@ -378,16 +358,12 @@
         };
 
         const loginScreen = document.getElementById('login-screen');
-        const sectionOnboardingScreen = document.getElementById('section-onboarding-screen');
         const appWrapper = document.getElementById('app-wrapper');
         const getStartedBtn = document.getElementById('get-started-btn');
-        const saveOnboardingBtn = document.getElementById('save-onboarding-btn');
         const emailInput = document.getElementById('user-email-input');
         const passInput = document.getElementById('user-pass-input');
-        const nameInput = document.getElementById('user-name-input');
         const rollInput = document.getElementById('user-roll-input');
         const loginError = document.getElementById('login-error');
-        const onboardingError = document.getElementById('onboarding-error');
         const logoutBtn = document.getElementById('logout-btn');
         const greetingText = document.getElementById('greeting-text');
         const headerSectionBadge = document.getElementById('header-section-badge');
@@ -402,7 +378,6 @@
                 await verifyAndLoadUserSession();
             } else {
                 loginScreen.classList.remove('hide');
-                sectionOnboardingScreen.classList.add('hide');
                 appWrapper.classList.add('hide');
             }
         });
@@ -410,19 +385,29 @@
         getStartedBtn.addEventListener('click', async () => {
             const email = emailInput.value.trim();
             const pass = passInput.value.trim();
-            const nameVal = nameInput.value.trim();
-            const rollVal = rollInput.value.trim();
+            const rollVal = rollInput.value.trim().toUpperCase();
 
             if (!email || !pass) {
                 loginError.innerText = "Please enter both email and password.";
                 loginError.classList.remove('hide');
                 return;
             }
-            loginError.classList.add('hide');
 
+            // AUTO-LOOKUP ALGORITHM
+            let studentMatch = null;
+            if (currentAuthMode === 'register') {
+                studentMatch = studentDirectory[rollVal];
+                if (!studentMatch) {
+                    loginError.innerText = "Roll Number not found in SRCC Database. Please check your spelling.";
+                    loginError.classList.remove('hide');
+                    return;
+                }
+            }
+
+            loginError.classList.add('hide');
             const loginText = document.getElementById('login-text');
             const loginIcon = document.getElementById('login-icon');
-            loginText.innerText = currentAuthMode === 'signin' ? "Signing In..." : "Creating Account...";
+            loginText.innerText = currentAuthMode === 'signin' ? "Signing In..." : "Generating Schedule...";
             loginIcon.className = "ph ph-spinner animate-spin text-base";
             getStartedBtn.classList.add('opacity-80', 'cursor-not-allowed');
             
@@ -431,16 +416,16 @@
                 if (currentAuthMode === 'signin') {
                     userCredential = await auth.signInWithEmailAndPassword(email, pass);
                 } else {
-                    if (!nameVal || !rollVal) {
-                        throw new Error("Please fill in your Name and Roll Number to register.");
-                    }
                     userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+                    // Dynamically map exact profile from Database Lookup
                     await db.collection('users').doc(userCredential.user.uid).set({
-                        name: nameVal,
+                        name: studentMatch.name,
                         roll: rollVal,
-                        section: '',
-                        vac: '',
-                        sec: '',
+                        section: studentMatch.section,
+                        tutGroup: studentMatch.tutGroup,
+                        pracGroup: studentMatch.pracGroup,
+                        sec: studentMatch.sec,
+                        vac: studentMatch.vac,
                         records: {},
                         customClasses: {}
                     });
@@ -457,41 +442,10 @@
             }
         });
 
-        saveOnboardingBtn.addEventListener('click', async () => {
-            const sectionVal = document.getElementById('onboarding-section-select').value;
-            const vacVal = document.getElementById('onboarding-vac-input').value.trim();
-            const secVal = document.getElementById('onboarding-sec-input').value.trim();
-
-            if (!sectionVal) {
-                onboardingError.innerText = "Please select your college section (A to N).";
-                onboardingError.classList.remove('hide');
-                return;
-            }
-            onboardingError.classList.add('hide');
-
-            cachedUserData.section = sectionVal;
-            cachedUserData.vac = vacVal || 'Not Specified';
-            cachedUserData.sec = secVal || 'Not Specified';
-
-            await db.collection('users').doc(currentUserUid).update({
-                section: cachedUserData.section,
-                vac: cachedUserData.vac,
-                sec: cachedUserData.sec
-            });
-
-            sectionOnboardingScreen.classList.add('fade-out');
-            setTimeout(() => {
-                sectionOnboardingScreen.classList.add('hide');
-                sectionOnboardingScreen.classList.remove('fade-out');
-                launchAppDashboard(cachedUserData);
-            }, 500);
-        });
-
         logoutBtn.addEventListener('click', async () => {
             await auth.signOut();
             localStorage.clear();
             appWrapper.classList.add('hide');
-            sectionOnboardingScreen.classList.add('hide');
             loginScreen.classList.remove('hide');
         });
 
@@ -501,47 +455,24 @@
 
             if (docSnap.exists) {
                 cachedUserData = docSnap.data();
-            } else {
-                cachedUserData = {
-                    name: nameInput.value.trim() || 'Student',
-                    roll: rollInput.value.trim() || '23BC229',
-                    section: '',
-                    vac: '',
-                    sec: '',
-                    records: {},
-                    customClasses: {}
-                };
-                await docRef.set(cachedUserData);
             }
 
-            // Check if Section onboarding is missing
-            if (!cachedUserData.section) {
-                loginScreen.classList.add('hide');
-                sectionOnboardingScreen.classList.remove('hide');
-                return;
-            }
+            localStorage.setItem('trackr_user_name', cachedUserData.name);
+            localStorage.setItem('trackr_roll_number', cachedUserData.roll);
+            localStorage.setItem('trackr_section', cachedUserData.section);
+            localStorage.setItem('trackr_data', JSON.stringify(cachedUserData.records || {}));
+            localStorage.setItem('trackr_custom_classes', JSON.stringify(cachedUserData.customClasses || {}));
 
+            greetingText.innerText = `Hello, ${cachedUserData.name} 👋`;
+            headerSectionBadge.innerText = `Sec ${cachedUserData.section} • ${cachedUserData.pracGroup}`;
+            
             loginScreen.classList.add('fade-out');
             setTimeout(() => {
                 loginScreen.classList.add('hide');
                 loginScreen.classList.remove('fade-out');
-                launchAppDashboard(cachedUserData);
+                appWrapper.classList.remove('hide');
+                initApp();
             }, 500);
-        }
-
-        function launchAppDashboard(userData) {
-            localStorage.setItem('trackr_user_name', userData.name);
-            localStorage.setItem('trackr_roll_number', userData.roll);
-            localStorage.setItem('trackr_section', userData.section);
-            localStorage.setItem('trackr_vac', userData.vac);
-            localStorage.setItem('trackr_sec', userData.sec);
-            localStorage.setItem('trackr_data', JSON.stringify(userData.records || {}));
-            localStorage.setItem('trackr_custom_classes', JSON.stringify(userData.customClasses || {}));
-
-            greetingText.innerText = `Hello, ${userData.name} 👋`;
-            headerSectionBadge.innerText = userData.section;
-            appWrapper.classList.remove('hide');
-            initApp();
         }
 
         async function saveUserDataToCloud() {
@@ -555,42 +486,29 @@
             });
         }
 
-        const timetable = {
-            1: [
-                { id: 'mon1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Room R2' },
-                { id: 'mon2', time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Lab', room: 'Room T48' }
-            ],
-            2: [
-                { id: 'tue1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lab', room: 'Library FF' },
-                { id: 'tue2', time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room PB3' },
-                { id: 'tue3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Lecture', room: 'Room R16' },
-                { id: 'tue4', time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics', type: 'Lab', room: 'Room R36' },
-                { id: 'tue5', time: '12:30 PM - 01:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room PB3' }
-            ],
-            3: [
-                { id: 'wed1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Room CL1' },
-                { id: 'wed2', time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Lab', room: 'Room T41' },
-                { id: 'wed3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Class', room: 'Room R16' },
-                { id: 'wed4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room R10' }
-            ],
-            4: [
-                { id: 'thu1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R32' },
-                { id: 'thu2', time: '09:30 AM - 10:30 AM', subject: 'Environmental Science I', type: 'Class', room: 'Library FF' },
-                { id: 'thu3', time: '10:30 AM - 11:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room R16' },
-                { id: 'thu4', time: '11:30 AM - 12:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Tutorial', room: 'Room T4' }
-            ],
-            5: [
-                { id: 'fri1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R34' },
-                { id: 'fri2', time: '09:30 AM - 10:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room PB2' },
-                { id: 'fri3', time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Library FF' },
-                { id: 'fri4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room R21' },
-                { id: 'fri5', time: '12:30 PM - 01:30 PM', subject: 'Principles of Marketing', type: 'Tutorial', room: 'Room T14' }
-            ],
-            6: [
-                { id: 'sat1', time: '10:30 AM - 11:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R32' }
-            ],
-            0: []
-        };
+        // --- DYNAMIC TIMETABLE FILTER ALGORITHM ---
+        function getPersonalizedTimetable(dayIndex) {
+            if (!cachedUserData || !cachedUserData.section) return [];
+
+            return masterTimetable.filter(cls => {
+                if (cls.day !== dayIndex) return false;
+
+                // Include Section Core/Tutorial/Lab classes
+                if (cls.section === cachedUserData.section) {
+                    if (cls.group === 'ALL') return true;
+                    if (cls.group === cachedUserData.tutGroup) return true;
+                    if (cls.group === cachedUserData.pracGroup) return true;
+                }
+
+                // Include matched SEC classes
+                if (cls.type === 'SEC' && cls.courseCode === cachedUserData.sec) return true;
+
+                // Include matched VAC classes
+                if (cls.type === 'VAC' && cls.courseCode === cachedUserData.vac) return true;
+
+                return false;
+            }).sort((a, b) => a.time.localeCompare(b.time)); // Basic time sort
+        }
 
         const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         
@@ -717,7 +635,7 @@
             }
 
             for (let dayNum = 1; dayNum <= 6; dayNum++) {
-                const classes = timetable[dayNum];
+                const classes = getPersonalizedTimetable(dayNum);
                 if (!classes || classes.length === 0) continue;
 
                 const dayDateISO = getDateForDayOfWeek(dayNum);
@@ -845,7 +763,7 @@
                     const dateStr = getLocalISOString(d);
                     if (dateStr >= SEMESTER_START_DATE) {
                         const dayIdx = d.getDay();
-                        const stdClasses = timetable[dayIdx] || [];
+                        const stdClasses = getPersonalizedTimetable(dayIdx);
                         const extClasses = customClasses[dateStr] || [];
                         const dayClasses = [...stdClasses, ...extClasses];
 
@@ -990,7 +908,7 @@
                 return;
             }
 
-            const standardClasses = timetable[activeDayIndex] || [];
+            const standardClasses = getPersonalizedTimetable(activeDayIndex);
             const extraClasses = customClasses[activeDateString] || [];
             const classesToday = [...standardClasses, ...extraClasses];
 
@@ -1190,7 +1108,7 @@
             container.innerHTML = '';
 
             for (let i = 1; i <= 6; i++) {
-                const dayClasses = timetable[i];
+                const dayClasses = getPersonalizedTimetable(i);
                 if (dayClasses.length === 0) continue;
 
                 let dayHTML = `
@@ -1222,7 +1140,6 @@
             auth.onAuthStateChanged(user => {
                 if (!user) {
                     loginScreen.classList.remove('hide');
-                    sectionOnboardingScreen.classList.add('hide');
                     appWrapper.classList.add('hide');
                 }
             });
