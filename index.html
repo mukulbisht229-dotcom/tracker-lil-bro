@@ -176,7 +176,7 @@
         </main>
     </div>
 
-    <!-- EXTRA CLASS MODAL (Clean UI Overlay) -->
+    <!-- EXTRA CLASS MODAL -->
     <div id="extra-class-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm hide transition-opacity duration-300">
         <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-2xl w-[90%] max-w-sm border border-gray-100 dark:border-gray-700">
             <h3 class="text-lg font-bold mb-4">Add Extra Class</h3>
@@ -313,7 +313,7 @@
         let dateString = todayDateObj.toISOString().split('T')[0]; 
         
         let attendanceRecords = {};
-        let customClasses = {}; // NEW: Storage for extra classes
+        let customClasses = {};
 
         function initApp() {
             attendanceRecords = JSON.parse(localStorage.getItem('trackr_data')) || {};
@@ -359,7 +359,6 @@
             });
         }
 
-        // EXTRA CLASS MODAL LOGIC
         window.openExtraClassModal = () => document.getElementById('extra-class-modal').classList.remove('hide');
         window.closeExtraClassModal = () => document.getElementById('extra-class-modal').classList.add('hide');
         
@@ -392,7 +391,6 @@
             updateStats();
         }
 
-        // SHARE VIRAL FLEX
         window.shareStats = function() {
             const pct = document.getElementById('overall-percentage').innerText;
             const streak = document.getElementById('streak-counter').innerText;
@@ -410,7 +408,6 @@
             const container = document.getElementById('today-classes-container');
             container.innerHTML = '';
             
-            // Merge regular timetable with today's custom added classes
             const standardClasses = timetable[currentDayIndex] || [];
             const extraClasses = customClasses[dateString] || [];
             const classesToday = [...standardClasses, ...extraClasses];
@@ -445,15 +442,15 @@
                     indicatorClass = 'bg-yellow-500';
                 }
 
-                // 2x2 Grid for buttons to keep UI super clean
+                // Styled with distinct attractive colors for Time and Location
                 const cardHTML = `
                     <div class="relative p-4 rounded-xl bg-white dark:bg-gray-850 border-l-4 shadow-sm ${borderClass} border-y border-r btn-transition">
                         <div class="flex justify-between items-start mb-3">
                             <div>
-                                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-wider uppercase">${cls.time}</span>
-                                <h3 class="text-base font-bold leading-tight mt-1">${cls.subject}</h3>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
-                                    <i class="ph ph-map-pin"></i> ${cls.room} &nbsp;&bull;&nbsp; ${cls.type}
+                                <span class="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-wider uppercase bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md">${cls.time}</span>
+                                <h3 class="text-base font-bold leading-tight mt-2">${cls.subject}</h3>
+                                <p class="text-sm text-emerald-600 dark:text-emerald-400 font-medium mt-1.5 flex items-center gap-1.5">
+                                    <i class="ph ph-map-pin text-emerald-500 text-base"></i> ${cls.room} <span class="text-gray-400">&bull;</span> <span class="text-gray-500 dark:text-gray-400 font-normal">${cls.type}</span>
                                 </p>
                             </div>
                             <div class="h-3 w-3 rounded-full ${indicatorClass}"></div>
@@ -464,7 +461,7 @@
                                 <i class="ph ph-check-circle mr-1"></i> Went
                             </button>
                             <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'eca')" class="py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'eca' ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-500 text-purple-700 dark:text-purple-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
-                                <i class="ph ph-briefcase mr-1"></i> Duty Leave
+                                <i class="ph ph-shield-check mr-1"></i> Excused
                             </button>
                             <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'skipped')" class="py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'skipped' ? 'bg-red-50 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
                                 <i class="ph ph-x-circle mr-1"></i> Skipped
@@ -527,7 +524,6 @@
                 if (record.status !== 'cancelled') {
                     subjectStats[record.subject].total++;
                     totalClasses++;
-                    // ECA counts as attended for overall percentage!
                     if (record.status === 'went' || record.status === 'eca') {
                         subjectStats[record.subject].attended++;
                         totalAttended++;
@@ -571,7 +567,6 @@
                 const subPct = Math.round((data.attended / data.total) * 100);
                 const barColor = subPct >= 75 ? 'bg-green-500' : 'bg-red-500';
                 
-                // BUNK BANK ALGORITHM
                 let safeStatusText = '';
                 if (subPct >= 75) {
                     const safeSkips = Math.floor((data.attended - 0.75 * data.total) / 0.75);
