@@ -20,12 +20,12 @@
     </script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-   <style>
+    <style>
         .btn-transition { transition: all 0.2s ease-in-out; }
         .hide { display: none !important; }
         .fade-out { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         
-        /* NEW: Smooth animation for switching tabs */
+        /* Smooth animation for switching tabs */
         @keyframes fadeSlideUp {
             0% { opacity: 0; transform: translateY(12px); }
             100% { opacity: 1; transform: translateY(0); }
@@ -33,6 +33,14 @@
         .view-section:not(.hide) {
             animation: fadeSlideUp 0.4s ease-out forwards;
         }
+
+        /* Popping Animation for Streak */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+        .pop-anim { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-300">
@@ -69,18 +77,18 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="current-date-display">Today</p>
             </div>
             <div class="flex items-center gap-3">
-                <!-- NEW: Duolingo-style Header Streak -->
-                <div class="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-3 py-1.5 rounded-full font-bold text-sm border border-orange-200 dark:border-orange-800/50 shadow-sm cursor-default hover:scale-105 btn-transition">
-                    <i class="ph-fill ph-fire text-lg"></i>
-                    <span id="header-streak">0</span>
-                </div>
+                <button id="logout-btn" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 btn-transition hover:scale-105 text-red-500" title="Sign Out">
+                    <i class="ph ph-sign-out text-xl"></i>
+                </button>
                 <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 btn-transition hover:scale-105">
                     <i class="ph ph-moon text-xl dark:hidden"></i>
                     <i class="ph ph-sun text-xl hidden dark:block text-yellow-400"></i>
                 </button>
-                <button id="logout-btn" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 btn-transition hover:scale-105 text-red-500" title="Sign Out">
-                    <i class="ph ph-sign-out text-xl"></i>
-                </button>
+                <!-- Duolingo-style Header Streak -->
+                <div id="streak-pill" class="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-3 py-1.5 rounded-full font-bold text-sm border border-orange-200 dark:border-orange-800/50 shadow-sm cursor-default">
+                    <i class="ph-fill ph-fire text-lg"></i>
+                    <span id="header-streak">0</span>
+                </div>
             </div>
         </header>
 
@@ -107,9 +115,9 @@
 
             <!-- VIEW: Statistics -->
             <section id="stats-view" class="view-section hide">
-<h2 class="text-lg font-semibold mb-6">Attendance Analytics</h2>
+                <h2 class="text-lg font-semibold mb-6">Attendance Analytics</h2>
                 
-                <!-- NEW: Streak Counter Card -->
+                <!-- Streak Counter Card -->
                 <div class="mb-6 flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg btn-transition hover:scale-[1.02]">
                     <div class="flex items-center gap-4">
                         <i class="ph ph-fire text-4xl text-orange-400"></i>
@@ -119,6 +127,7 @@
                         </div>
                     </div>
                 </div>                
+                
                 <!-- Overall Progress -->
                 <div class="mb-8 p-5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Overall Attendance</h3>
@@ -165,7 +174,7 @@
             if (isLoggedIn === 'true') {
                 loginScreen.classList.add('hide');
                 appWrapper.classList.remove('hide');
-                initApp(); // Only load the app data if logged in
+                initApp(); 
             } else {
                 loginScreen.classList.remove('hide');
                 appWrapper.classList.add('hide');
@@ -173,7 +182,6 @@
         }
 
         loginBtn.addEventListener('click', () => {
-            // Simulate a loading state for realism
             loginText.innerText = "Signing in...";
             loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
             
@@ -186,13 +194,12 @@
                     loginScreen.classList.remove('fade-out');
                     appWrapper.classList.remove('hide');
                     
-                    // Reset button state for next time
                     loginText.innerText = "Sign in with Google";
                     loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
                     
                     initApp();
-                }, 500); // Wait for fade out
-            }, 1200); // 1.2 second fake loading delay
+                }, 500); 
+            }, 1200); 
         });
 
         logoutBtn.addEventListener('click', () => {
@@ -264,7 +271,6 @@
                 document.documentElement.classList.remove('dark');
             }
 
-            // Remove old listeners to prevent duplicates if logged in multiple times
             const newThemeBtn = themeToggleBtn.cloneNode(true);
             themeToggleBtn.parentNode.replaceChild(newThemeBtn, themeToggleBtn);
 
@@ -311,6 +317,8 @@
             attendanceRecords[recordKey] = { subject, status };
             localStorage.setItem('trackr_data', JSON.stringify(attendanceRecords));
             renderTodayClasses();
+            // Call updateStats to update the fire icon in real time
+            updateStats();
         }
 
         function renderTodayClasses() {
@@ -377,26 +385,41 @@
                 container.innerHTML += cardHTML;
             });
         }
+
         function updateStats() {
-            // NEW: Streak Calculation Logic (Chronological)
+            // Streak Calculation Logic
             let currentStreak = 0;
             const sortedRecords = Object.keys(attendanceRecords)
                 .map(key => ({ date: key.split('_')[0], status: attendanceRecords[key].status }))
                 .filter(record => record.status !== 'cancelled')
-                .sort((a, b) => b.date.localeCompare(a.date)); // Sorts newest to oldest
+                .sort((a, b) => b.date.localeCompare(a.date)); 
 
             for (let i = 0; i < sortedRecords.length; i++) {
                 if (sortedRecords[i].status === 'went') {
                     currentStreak++;
                 } else if (sortedRecords[i].status === 'skipped') {
-                    break; // Streak broken, stop counting
+                    break; 
                 }
             }
+            
             if (document.getElementById('streak-counter')) {
                 document.getElementById('streak-counter').innerText = currentStreak;
             }
-            if (document.getElementById('header-streak')) {
-                document.getElementById('header-streak').innerText = currentStreak;
+
+            const headerStreak = document.getElementById('header-streak');
+            if (headerStreak) {
+                // Trigger the pop animation if the number changes
+                if (headerStreak.innerText !== currentStreak.toString()) {
+                    headerStreak.innerText = currentStreak;
+                    const pill = document.getElementById('streak-pill');
+                    if (pill) {
+                        pill.classList.remove('pop-anim');
+                        void pill.offsetWidth; // Resets the animation
+                        pill.classList.add('pop-anim');
+                    }
+                } else {
+                    headerStreak.innerText = currentStreak;
+                }
             }
 
             let totalClasses = 0;
@@ -410,7 +433,6 @@
                     subjectStats[record.subject] = { attended: 0, total: 0 };
                 }
                 
-                // NEW: Only count it in the math if the class actually happened!
                 if (record.status !== 'cancelled') {
                     subjectStats[record.subject].total++;
                     totalClasses++;
@@ -453,7 +475,7 @@
             }
 
             for (const [subject, data] of Object.entries(subjectStats)) {
-                if (data.total === 0) continue; // Hide the subject if all its classes were cancelled
+                if (data.total === 0) continue; 
                 
                 const subPct = Math.round((data.attended / data.total) * 100);
                 const barColor = subPct >= 75 ? 'bg-green-500' : 'bg-red-500';
@@ -471,7 +493,9 @@
                     </div>
                 `;
             }
-        }function renderFullTimetable() {
+        }
+
+        function renderFullTimetable() {
             const container = document.getElementById('full-timetable-container');
             container.innerHTML = '';
 
