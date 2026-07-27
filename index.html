@@ -105,10 +105,19 @@
         <!-- Main Content Area -->
         <main class="flex-1 overflow-y-auto p-6 pb-12">
             
-            <!-- VIEW: Today's Classes -->
+            <!-- VIEW: Today's / Back-dated Classes -->
             <section id="today-view" class="view-section">
+                <!-- Back-Dating Date Picker Bar -->
+                <div class="mb-5 flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <i class="ph ph-calendar-blank text-blue-600 dark:text-blue-400 text-lg"></i>
+                        <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Audit Date:</span>
+                    </div>
+                    <input type="date" id="attendance-date-picker" class="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
+                </div>
+
                 <h2 class="text-lg font-semibold mb-4 flex items-center justify-between">
-                    <span>Today's Classes</span>
+                    <span id="classes-title">Classes for Today</span>
                     <span id="day-badge" class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md"></span>
                 </h2>
                 <div id="today-classes-container" class="space-y-4"></div>
@@ -157,7 +166,6 @@
                     </div>
                 </div>
 
-                <!-- REPORT ANALYSIS & 65% RISK ENGINE WITH COLLAPSIBLE ARROW -->
                 <div class="mb-8 p-5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white border border-slate-700 shadow-xl">
                     <div class="flex justify-between items-center cursor-pointer select-none" onclick="toggleReportAnalysis()">
                         <h3 class="text-sm font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
@@ -169,7 +177,6 @@
                         </div>
                     </div>
                     
-                    <!-- Collapsible Body Container -->
                     <div id="report-analysis-body" class="mt-3 pt-3 border-t border-slate-700/60 transition-all duration-300">
                         <p class="text-xs text-slate-300 mb-4">Mathematical priority matrix tracking your proximity to the bare minimum 65% threshold and highlighting high-volatility subjects.</p>
                         <div id="report-analysis-container" class="space-y-3"></div>
@@ -339,9 +346,11 @@
         };
 
         const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        let todayDateObj = new Date();
-        let currentDayIndex = todayDateObj.getDay();
-        let dateString = todayDateObj.toISOString().split('T')[0]; 
+        
+        // Active viewing date state (Defaults to today, but adjustable via date picker)
+        let activeDateObj = new Date();
+        let activeDateString = activeDateObj.toISOString().split('T')[0]; 
+        let activeDayIndex = activeDateObj.getDay();
         
         let attendanceRecords = {};
         let customClasses = {};
@@ -350,6 +359,7 @@
             attendanceRecords = JSON.parse(localStorage.getItem('trackr_data')) || {};
             customClasses = JSON.parse(localStorage.getItem('trackr_custom_classes')) || {};
             setupUI();
+            setupDatePicker();
             renderTodayClasses();
             renderFullTimetable();
             updateStats();
@@ -357,8 +367,8 @@
 
         function setupUI() {
             const options = { weekday: 'long', day: 'numeric', month: 'short' };
-            document.getElementById('current-date-display').innerText = todayDateObj.toLocaleDateString('en-US', options);
-            document.getElementById('day-badge').innerText = daysOfWeek[currentDayIndex];
+            document.getElementById('current-date-display').innerText = activeDateObj.toLocaleDateString('en-US', options);
+            document.getElementById('day-badge').innerText = daysOfWeek[activeDayIndex];
 
             const themeToggleBtn = document.getElementById('theme-toggle');
             if (localStorage.getItem('trackr_theme') === 'light') document.documentElement.classList.remove('dark');
@@ -390,7 +400,37 @@
             });
         }
 
-        // TOGGLE COLLAPSIBLE REPORT ANALYSIS CARD
+        // BACK-DATING DATE PICKER SETUP
+        function setupDatePicker() {
+            const datePicker = document.getElementById('attendance-date-picker');
+            if (datePicker) {
+                datePicker.value = activeDateString;
+                datePicker.max = new Date().toISOString().split('T')[0]; // Can't mark future dates
+                
+                datePicker.onchange = (e) => {
+                    const selectedVal = e.target.value;
+                    if (!selectedVal) return;
+
+                    // Fix timezone offset issue when parsing date string YYYY-MM-DD
+                    const parts = selectedVal.split('-');
+                    activeDateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+                    activeDateString = selectedVal;
+                    activeDayIndex = activeDateObj.getDay();
+
+                    // Update UI labels
+                    document.getElementById('day-badge').innerText = daysOfWeek[activeDayIndex];
+                    const options = { weekday: 'long', day: 'numeric', month: 'short' };
+                    document.getElementById('current-date-display').innerText = activeDateObj.toLocaleDateString('en-US', options);
+                    
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const titleText = activeDateString === todayStr ? "Classes for Today" : `Classes for ${activeDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} (Back-dated)`;
+                    document.getElementById('classes-title').innerText = titleText;
+
+                    renderTodayClasses();
+                };
+            }
+        }
+
         let isReportExpanded = true;
         window.toggleReportAnalysis = function() {
             isReportExpanded = !isReportExpanded;
@@ -417,12 +457,14 @@
             }
 
             function getDateForDayOfWeek(dayNum) {
-                const d = new Date();
-                const day = d.getDay();
-                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-                const monday = new Date(d.setDate(diff));
+                const now = new Date();
+                const currentDay = now.getDay();
+                const distanceToMonday = (currentDay === 0 ? -6 : 1) - currentDay;
                 
-                const targetDate = new Date(monday);
+                const monday = new Date(now.getTime());
+                monday.setDate(now.getDate() + distanceToMonday);
+                
+                const targetDate = new Date(monday.getTime());
                 targetDate.setDate(monday.getDate() + (dayNum - 1));
                 return targetDate.toISOString().split('T')[0].replace(/-/g, '');
             }
@@ -480,8 +522,8 @@
             const time = document.getElementById('extra-time').value.trim() || 'Extra Class';
             if (!subject) return;
             
-            if (!customClasses[dateString]) customClasses[dateString] = [];
-            customClasses[dateString].push({
+            if (!customClasses[activeDateString]) customClasses[activeDateString] = [];
+            customClasses[activeDateString].push({
                 id: 'ext_' + Date.now(),
                 time: time,
                 subject: subject,
@@ -497,7 +539,7 @@
         };
 
         window.markAttendance = function(classId, subject, status) {
-            const recordKey = `${dateString}_${classId}`;
+            const recordKey = `${activeDateString}_${classId}`;
             attendanceRecords[recordKey] = { subject, status };
             localStorage.setItem('trackr_data', JSON.stringify(attendanceRecords));
             renderTodayClasses();
@@ -522,7 +564,7 @@
             container.innerHTML = '';
 
             const monthsSet = new Set();
-            const currentMonthStr = `${todayDateObj.getFullYear()}-${String(todayDateObj.getMonth() + 1).padStart(2, '0')}`;
+            const currentMonthStr = `${activeDateObj.getFullYear()}-${String(activeDateObj.getMonth() + 1).padStart(2, '0')}`;
             monthsSet.add(currentMonthStr);
 
             for (const key in attendanceRecords) {
@@ -555,7 +597,8 @@
                     const extClasses = customClasses[dateStr] || [];
                     const dayClasses = [...stdClasses, ...extClasses];
 
-                    const isPastOrToday = dateStr <= todayDateObj.toISOString().split('T')[0];
+                    const todayISO = new Date().toISOString().split('T')[0];
+                    const isPastOrToday = dateStr <= todayISO;
 
                     dayClasses.forEach(cls => {
                         const sub = cls.subject;
@@ -685,21 +728,21 @@
             const container = document.getElementById('today-classes-container');
             container.innerHTML = '';
             
-            const standardClasses = timetable[currentDayIndex] || [];
-            const extraClasses = customClasses[dateString] || [];
+            const standardClasses = timetable[activeDayIndex] || [];
+            const extraClasses = customClasses[activeDateString] || [];
             const classesToday = [...standardClasses, ...extraClasses];
 
             if (classesToday.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-10 text-gray-500">
                         <i class="ph ph-coffee text-4xl mb-2"></i>
-                        <p>No classes scheduled for today.</p>
+                        <p>No classes scheduled for this date.</p>
                     </div>`;
                 return;
             }
 
             classesToday.forEach(cls => {
-                const recordKey = `${dateString}_${cls.id}`;
+                const recordKey = `${activeDateString}_${cls.id}`;
                 const record = attendanceRecords[recordKey];
                 
                 let borderClass = 'border-gray-200 dark:border-gray-700';
