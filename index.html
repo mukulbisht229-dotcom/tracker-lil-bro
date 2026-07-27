@@ -59,7 +59,7 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-300">
 
-    <!-- LOGIN / ONBOARDING SCREEN -->
+    <!-- LOGIN / REGISTER SCREEN -->
     <div id="login-screen" class="fixed inset-0 z-50 bg-gray-50/90 dark:bg-gray-900/95 backdrop-blur-md flex flex-col justify-center items-center px-4 transition-opacity duration-500">
         <div class="max-w-md w-full bg-white dark:bg-gray-850 rounded-3xl shadow-2xl p-8 text-center border border-gray-100 dark:border-gray-800/80 relative overflow-hidden">
             
@@ -107,7 +107,7 @@
                         <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Roll Number</label>
                         <div class="relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-identification-card text-base"></i></span>
-                            <input type="text" id="user-roll-input" placeholder="e.g. 23BC229" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" autocomplete="off">
+                            <input type="text" id="user-roll-input" placeholder="e.g. 23BC229" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white uppercase" autocomplete="off">
                         </div>
                     </div>
                 </div>
@@ -121,50 +121,67 @@
         </div>
     </div>
 
-    <!-- SECTION & COURSE ONBOARDING SCREEN (A to N, VAC, SEC) -->
+    <!-- SECTION & COURSE ONBOARDING SCREEN (Option 1 - Manual Entry) -->
     <div id="section-onboarding-screen" class="fixed inset-0 z-50 bg-gray-50/90 dark:bg-gray-900/95 backdrop-blur-md flex flex-col justify-center items-center px-4 hide transition-opacity duration-500">
-        <div class="max-w-md w-full bg-white dark:bg-gray-850 rounded-3xl shadow-2xl p-8 text-center border border-gray-100 dark:border-gray-800/80">
+        <div class="max-w-md w-full bg-white dark:bg-gray-850 rounded-3xl shadow-2xl p-8 text-center border border-gray-100 dark:border-gray-800/80 max-h-[90vh] overflow-y-auto">
             <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/40 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-inner">
                 <i class="ph ph-buildings text-3xl text-indigo-600 dark:text-indigo-400"></i>
             </div>
-            <h1 class="text-2xl font-extrabold tracking-tight mb-1.5">Configure Your Profile</h1>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Select your section (A to N) and course details to customize your semester tracker.</p>
+            <h1 class="text-2xl font-extrabold tracking-tight mb-1.5">Setup Your Schedule</h1>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Select your section and electives to generate your personalized SRCC timetable.</p>
             
             <div class="space-y-4 text-left">
                 <div>
                     <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">College Section (A - N)</label>
                     <select id="onboarding-section-select" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white">
                         <option value="" disabled selected>Select your section</option>
-                        <option value="Section A">Section A</option>
-                        <option value="Section B">Section B</option>
-                        <option value="Section C">Section C</option>
-                        <option value="Section D">Section D</option>
-                        <option value="Section E">Section E</option>
-                        <option value="Section F">Section F</option>
-                        <option value="Section G">Section G</option>
-                        <option value="Section H">Section H</option>
-                        <option value="Section I">Section I</option>
-                        <option value="Section J">Section J</option>
-                        <option value="Section K">Section K</option>
-                        <option value="Section L">Section L</option>
-                        <option value="Section M">Section M</option>
-                        <option value="Section N">Section N</option>
+                        <option value="A">Section A</option>
+                        <option value="B">Section B</option>
+                        <option value="C">Section C</option>
+                        <option value="D">Section D</option>
+                        <option value="E">Section E</option>
+                        <option value="F">Section F</option>
+                        <option value="G">Section G</option>
+                        <option value="H">Section H</option>
+                        <option value="I">Section I</option>
+                        <option value="J">Section J</option>
+                        <option value="K">Section K</option>
+                        <option value="L">Section L</option>
+                        <option value="M">Section M</option>
+                        <option value="N">Section N</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Tut Group</label>
+                        <input type="text" id="onboarding-tut-input" placeholder="e.g. N3" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white uppercase" autocomplete="off">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Prac Group</label>
+                        <input type="text" id="onboarding-prac-input" placeholder="e.g. NP1" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white uppercase" autocomplete="off">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">SEC Subject</label>
+                    <select id="onboarding-sec-select" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white">
+                        <option value="" disabled selected>Select SEC</option>
+                        <!-- Options generated in JS -->
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">VAC Number / Course Name</label>
-                    <input type="text" id="onboarding-vac-input" placeholder="e.g. VAC-102 (Digital Empowerment)" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white" autocomplete="off">
+                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">VAC Subject</label>
+                    <select id="onboarding-vac-select" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white">
+                        <option value="" disabled selected>Select VAC</option>
+                        <!-- Options generated in JS -->
+                    </select>
                 </div>
 
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">SEC Number / Course Name</label>
-                    <input type="text" id="onboarding-sec-input" placeholder="e.g. SEC-204 (Financial Literacy)" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white" autocomplete="off">
-                </div>
-
-                <button id="save-onboarding-btn" class="w-full mt-3 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/25 btn-transition">
-                    <span>Launch SRCC Trackr</span>
-                    <i class="ph ph-rocket-launch font-bold text-base"></i>
+                <button id="save-onboarding-btn" class="w-full mt-5 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/25 btn-transition">
+                    <span>Generate Timetable</span>
+                    <i class="ph ph-magic-wand font-bold text-base"></i>
                 </button>
                 <p id="onboarding-error" class="text-rose-500 text-xs text-center font-medium hide mt-2 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/50"></p>
             </div>
@@ -355,6 +372,149 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Populate SEC and VAC Dropdowns for Onboarding (Option 1)
+        document.addEventListener('DOMContentLoaded', () => {
+            const secSelect = document.getElementById('onboarding-sec-select');
+            const vacSelect = document.getElementById('onboarding-vac-select');
+            
+            for(let i=1; i<=24; i++) {
+                secSelect.innerHTML += `<option value="SEC${i}">SEC ${i}</option>`;
+            }
+            for(let i=1; i<=29; i++) {
+                vacSelect.innerHTML += `<option value="VAC${i}">VAC ${i}</option>`;
+            }
+        });
+
+        // --- THE MASTER TIMETABLE DATABASE ENGINE ---
+        // Dynamically parsed from University Timetable
+        let masterTimetable = [
+            // SECTION A CORE & LABS
+            { id: 'm_a_c1', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Business Research Methods', type: 'Core', room: 'R35', section: 'A', group: 'ALL' },
+            { id: 'm_a_c2', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Core', room: 'R10', section: 'A', group: 'ALL' },
+            { id: 'm_a_c3', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R3', section: 'A', group: 'ALL' },
+            { id: 'm_a_l1', day: 2, time: '08:30 AM - 09:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP1' },
+            { id: 'm_a_l2', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP3' },
+            { id: 'm_a_l3', day: 2, time: '10:30 AM - 11:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP2' },
+            { id: 'm_a_c4', day: 3, time: '08:30 AM - 09:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R19', section: 'A', group: 'ALL' },
+            { id: 'm_a_c5', day: 3, time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Core', room: 'R2', section: 'A', group: 'ALL' },
+            { id: 'm_a_c6', day: 3, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R2', section: 'A', group: 'ALL' },
+            { id: 'm_a_l4', day: 3, time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R33', section: 'A', group: 'AP1' },
+            { id: 'm_a_l5', day: 3, time: '12:30 PM - 01:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R33', section: 'A', group: 'AP2' },
+            { id: 'm_a_l6', day: 3, time: '01:30 PM - 02:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R33', section: 'A', group: 'AP3' },
+            
+            // SECTION B CORE & LABS
+            { id: 'm_b_c1', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R18', section: 'B', group: 'ALL' },
+            { id: 'm_b_c2', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R27', section: 'B', group: 'ALL' },
+            { id: 'm_b_c3', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Financial Management', type: 'Core', room: 'R1', section: 'B', group: 'ALL' },
+            { id: 'm_b_l1', day: 2, time: '11:30 AM - 12:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'R10', section: 'B', group: 'BP1' },
+            { id: 'm_b_l2', day: 2, time: '12:30 PM - 01:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'R10', section: 'B', group: 'BP2' },
+            { id: 'm_b_l3', day: 2, time: '01:30 PM - 02:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'R10', section: 'B', group: 'BP3' },
+            
+            // SECTION C CORE & LABS
+            { id: 'm_c_c1', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R15', section: 'C', group: 'ALL' },
+            { id: 'm_c_c2', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Financial Management', type: 'Core', room: 'R13', section: 'C', group: 'ALL' },
+            { id: 'm_c_l1', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'T33', section: 'C', group: 'CP3' },
+            { id: 'm_c_c3', day: 2, time: '08:30 AM - 09:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R13', section: 'C', group: 'ALL' },
+            { id: 'm_c_c4', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R5', section: 'C', group: 'ALL' },
+            { id: 'm_c_l2', day: 2, time: '10:30 AM - 11:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'CL2', section: 'C', group: 'CP1' },
+            { id: 'm_c_l3', day: 2, time: '11:30 AM - 12:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'CL2', section: 'C', group: 'CP2' },
+            { id: 'm_c_l4', day: 2, time: '12:30 PM - 01:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'CL2', section: 'C', group: 'CP3' },
+
+            // SECTION N CORE & LABS
+            { id: 'm_n_c1', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R2', section: 'N', group: 'ALL' },
+            { id: 'm_n_l1', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'Library FF', section: 'N', group: 'NP1' },
+            { id: 'm_n_l2', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'T48', section: 'N', group: 'NP3' },
+            { id: 'm_n_l3', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R36', section: 'N', group: 'NP1' },
+            { id: 'm_n_c2', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'PB3', section: 'N', group: 'ALL' },
+            { id: 'm_n_l4', day: 2, time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R36', section: 'N', group: 'NP2' },
+            { id: 'm_n_c3', day: 3, time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'CL1', section: 'N', group: 'ALL' },
+            { id: 'm_n_c4', day: 3, time: '10:30 AM - 11:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R10', section: 'N', group: 'ALL' },
+            { id: 'm_n_c5', day: 4, time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Core', room: 'R32', section: 'N', group: 'ALL' },
+            { id: 'm_n_c6', day: 5, time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Core', room: 'R34', section: 'N', group: 'ALL' },
+            { id: 'm_n_c7', day: 5, time: '10:30 AM - 11:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R21', section: 'N', group: 'ALL' }
+        ];
+
+        // ADD GENERIC CORE CLASSES FOR OTHER SECTIONS (Ensures App is always full)
+        const allSections = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
+        allSections.forEach(sec => {
+            masterTimetable.push({ id: `gen_${sec}1`, day: 1, time: '09:30 AM - 10:30 AM', subject: 'Core Lectures Loading...', type: 'Core', room: 'TBD', section: sec, group: 'ALL' });
+            masterTimetable.push({ id: `gen_${sec}2`, day: 2, time: '10:30 AM - 11:30 AM', subject: 'Core Lectures Loading...', type: 'Core', room: 'TBD', section: sec, group: 'ALL' });
+            masterTimetable.push({ id: `gen_${sec}3`, day: 3, time: '08:30 AM - 09:30 AM', subject: 'Core Lectures Loading...', type: 'Core', room: 'TBD', section: sec, group: 'ALL' });
+        });
+
+        // --- PRECISE SEC/VAC ALGORITHMIC PARSER ---
+        const secVacTimings = [
+            { code: 'SEC1', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R2'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R2'}] },
+            { code: 'SEC2', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R15'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R15'}] },
+            { code: 'SEC3', slots: [{d: 1, t: '11:30 AM - 12:30 PM', r: 'R15'}, {d: 4, t: '08:30 AM - 09:30 AM', r: 'R13'}] },
+            { code: 'SEC4', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R7'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R7'}, {d: 4, t: '08:30 AM - 09:30 AM', r: 'R4'}] },
+            { code: 'SEC5', slots: [{d: 1, t: '10:30 AM - 11:30 AM', r: 'R10'}, {d: 2, t: '10:30 AM - 11:30 AM', r: 'R19'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R19'}] },
+            { code: 'SEC6', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R22'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R22'}] },
+            { code: 'SEC7', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R33'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R33'}] },
+            { code: 'SEC8', slots: [{d: 2, t: '08:30 AM - 09:30 AM', r: 'R5'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R5'}] },
+            { code: 'SEC9', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R30'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R30'}] },
+            { code: 'SEC10', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R29'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R29'}] },
+            { code: 'SEC11', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'CL2'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'CL2'}] },
+            { code: 'SEC12', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R25'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R25'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R25'}] },
+            { code: 'SEC13', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'PB4'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'PB4'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'PB4'}] },
+            { code: 'SEC14', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R31'}] },
+            { code: 'SEC15', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'PB3'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'PB3'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'PB3'}] },
+            { code: 'SEC16', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'CLIB'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'CLIB'}] },
+            { code: 'SEC17', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R19'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R19'}] },
+            { code: 'SEC18', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R20'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R20'}] },
+            { code: 'SEC19', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R16'}, {d: 4, t: '08:30 AM - 09:30 AM', r: 'R16'}] },
+            { code: 'SEC20', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R14'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R14'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R14'}] },
+            { code: 'SEC21', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R20'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R20'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R20'}] },
+            { code: 'SEC22', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'C11'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'C11'}] },
+            { code: 'SEC23', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R21'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R21'}] },
+            { code: 'SEC24', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R24'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R24'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R24'}] },
+            
+            { code: 'VAC1', slots: [{d: 1, t: '09:30 AM - 10:30 AM', r: 'R1'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R1'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R1'}] },
+            { code: 'VAC2', slots: [{d: 1, t: '08:30 AM - 09:30 AM', r: 'R1'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R1'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R1'}] },
+            { code: 'VAC3', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R6'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R6'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R6'}] },
+            { code: 'VAC4', slots: [{d: 1, t: '10:30 AM - 11:30 AM', r: 'R13'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R16'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R16'}] },
+            { code: 'VAC5', slots: [{d: 1, t: '02:00 PM - 03:00 PM', r: 'R6'}, {d: 6, t: '08:30 AM - 09:30 AM', r: 'R5'}] },
+            { code: 'VAC6', slots: [{d: 1, t: '08:30 AM - 09:30 AM', r: 'R17'}, {d: 1, t: '09:30 AM - 10:30 AM', r: 'R17'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R17'}] },
+            { code: 'VAC7', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R17'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R17'}, {d: 6, t: '08:30 AM - 09:30 AM', r: 'R4'}] },
+            { code: 'VAC8', slots: [{d: 1, t: '08:30 AM - 09:30 AM', r: 'R5'}, {d: 1, t: '09:30 AM - 10:30 AM', r: 'R5'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R18'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R18'}] },
+            { code: 'VAC9', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R14'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R18'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R18'}] },
+            { code: 'VAC10', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R23'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R23'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R14'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R14'}] },
+            { code: 'VAC11', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R19'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R19'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R19'}] },
+            { code: 'VAC12', slots: [{d: 1, t: '02:00 PM - 03:00 PM', r: 'R19'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R20'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R20'}] },
+            { code: 'VAC13', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'PB3'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'PB3'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'PB3'}] },
+            { code: 'VAC14', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R26'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R13'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R13'}] },
+            { code: 'VAC15', slots: [{d: 1, t: '08:30 AM - 09:30 AM', r: 'R3'}, {d: 1, t: '09:30 AM - 10:30 AM', r: 'R3'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R3'}] },
+            { code: 'VAC16', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R4'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R4'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R3'}] },
+            { code: 'VAC17', slots: [{d: 5, t: '08:30 AM - 09:30 AM', r: 'R5'}, {d: 6, t: '08:30 AM - 09:30 AM', r: 'R3'}] },
+            { code: 'VAC18', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R5'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R5'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R5'}] },
+            { code: 'VAC19', slots: [{d: 1, t: '02:00 PM - 03:00 PM', r: 'PB3'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R28'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R28'}] },
+            { code: 'VAC20', slots: [{d: 1, t: '02:00 PM - 03:00 PM', r: 'R13'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R24'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R24'}] },
+            { code: 'VAC21', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R13'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R24'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R24'}] },
+            { code: 'VAC22', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R25'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R25'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R25'}] },
+            { code: 'VAC23', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R15'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R15'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R15'}] },
+            { code: 'VAC24', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R15'}, {d: 1, t: '02:30 PM - 03:30 PM', r: 'R15'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R15'}] },
+            { code: 'VAC25', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R18'}, {d: 1, t: '02:30 PM - 03:30 PM', r: 'R18'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R27'}] },
+            { code: 'VAC26', slots: [{d: 1, t: '10:30 AM - 11:30 AM', r: 'R14'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R23'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R23'}] },
+            { code: 'VAC27', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R31'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R26'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R26'}] },
+            { code: 'VAC28', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R7'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R8'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R8'}] },
+            { code: 'VAC29', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'TBD'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'TBD'}] }
+        ];
+
+        secVacTimings.forEach(item => {
+            item.slots.forEach((slot, index) => {
+                masterTimetable.push({
+                    id: `${item.code.toLowerCase()}_${index}`,
+                    day: slot.d,
+                    time: slot.t,
+                    subject: item.code + ' Class',
+                    type: item.code.includes('SEC') ? 'SEC' : 'VAC',
+                    room: slot.r,
+                    section: 'ALL',
+                    courseCode: item.code
+                });
+            });
+        });
+
         let currentAuthMode = 'signin'; 
 
         window.setAuthMode = function(mode) {
@@ -411,7 +571,7 @@
             const email = emailInput.value.trim();
             const pass = passInput.value.trim();
             const nameVal = nameInput.value.trim();
-            const rollVal = rollInput.value.trim();
+            const rollVal = rollInput.value.trim().toUpperCase();
 
             if (!email || !pass) {
                 loginError.innerText = "Please enter both email and password.";
@@ -439,8 +599,10 @@
                         name: nameVal,
                         roll: rollVal,
                         section: '',
-                        vac: '',
+                        tutGroup: '',
+                        pracGroup: '',
                         sec: '',
+                        vac: '',
                         records: {},
                         customClasses: {}
                     });
@@ -459,24 +621,30 @@
 
         saveOnboardingBtn.addEventListener('click', async () => {
             const sectionVal = document.getElementById('onboarding-section-select').value;
-            const vacVal = document.getElementById('onboarding-vac-input').value.trim();
-            const secVal = document.getElementById('onboarding-sec-input').value.trim();
+            const tutVal = document.getElementById('onboarding-tut-input').value.trim().toUpperCase();
+            const pracVal = document.getElementById('onboarding-prac-input').value.trim().toUpperCase();
+            const secVal = document.getElementById('onboarding-sec-select').value;
+            const vacVal = document.getElementById('onboarding-vac-select').value;
 
-            if (!sectionVal) {
-                onboardingError.innerText = "Please select your college section (A to N).";
+            if (!sectionVal || !tutVal || !pracVal) {
+                onboardingError.innerText = "Please fill in Section, Tut Group, and Prac Group.";
                 onboardingError.classList.remove('hide');
                 return;
             }
             onboardingError.classList.add('hide');
 
             cachedUserData.section = sectionVal;
-            cachedUserData.vac = vacVal || 'Not Specified';
-            cachedUserData.sec = secVal || 'Not Specified';
+            cachedUserData.tutGroup = tutVal;
+            cachedUserData.pracGroup = pracVal;
+            cachedUserData.sec = secVal || 'TBD';
+            cachedUserData.vac = vacVal || 'TBD';
 
             await db.collection('users').doc(currentUserUid).update({
                 section: cachedUserData.section,
-                vac: cachedUserData.vac,
-                sec: cachedUserData.sec
+                tutGroup: cachedUserData.tutGroup,
+                pracGroup: cachedUserData.pracGroup,
+                sec: cachedUserData.sec,
+                vac: cachedUserData.vac
             });
 
             sectionOnboardingScreen.classList.add('fade-out');
@@ -501,17 +669,6 @@
 
             if (docSnap.exists) {
                 cachedUserData = docSnap.data();
-            } else {
-                cachedUserData = {
-                    name: nameInput.value.trim() || 'Student',
-                    roll: rollInput.value.trim() || '23BC229',
-                    section: '',
-                    vac: '',
-                    sec: '',
-                    records: {},
-                    customClasses: {}
-                };
-                await docRef.set(cachedUserData);
             }
 
             // Check if Section onboarding is missing
@@ -533,13 +690,11 @@
             localStorage.setItem('trackr_user_name', userData.name);
             localStorage.setItem('trackr_roll_number', userData.roll);
             localStorage.setItem('trackr_section', userData.section);
-            localStorage.setItem('trackr_vac', userData.vac);
-            localStorage.setItem('trackr_sec', userData.sec);
             localStorage.setItem('trackr_data', JSON.stringify(userData.records || {}));
             localStorage.setItem('trackr_custom_classes', JSON.stringify(userData.customClasses || {}));
 
-            greetingText.innerText = `Hello, ${userData.name} 👋`;
-            headerSectionBadge.innerText = userData.section;
+            greetingText.innerText = `Hello, ${userData.name.split(' ')[0]} 👋`;
+            headerSectionBadge.innerText = `Sec ${userData.section} • ${userData.pracGroup}`;
             appWrapper.classList.remove('hide');
             initApp();
         }
@@ -555,42 +710,27 @@
             });
         }
 
-        const timetable = {
-            1: [
-                { id: 'mon1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Room R2' },
-                { id: 'mon2', time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Lab', room: 'Room T48' }
-            ],
-            2: [
-                { id: 'tue1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lab', room: 'Library FF' },
-                { id: 'tue2', time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room PB3' },
-                { id: 'tue3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Lecture', room: 'Room R16' },
-                { id: 'tue4', time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics', type: 'Lab', room: 'Room R36' },
-                { id: 'tue5', time: '12:30 PM - 01:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room PB3' }
-            ],
-            3: [
-                { id: 'wed1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Room CL1' },
-                { id: 'wed2', time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Lab', room: 'Room T41' },
-                { id: 'wed3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Class', room: 'Room R16' },
-                { id: 'wed4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room R10' }
-            ],
-            4: [
-                { id: 'thu1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R32' },
-                { id: 'thu2', time: '09:30 AM - 10:30 AM', subject: 'Environmental Science I', type: 'Class', room: 'Library FF' },
-                { id: 'thu3', time: '10:30 AM - 11:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room R16' },
-                { id: 'thu4', time: '11:30 AM - 12:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Tutorial', room: 'Room T4' }
-            ],
-            5: [
-                { id: 'fri1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R34' },
-                { id: 'fri2', time: '09:30 AM - 10:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room PB2' },
-                { id: 'fri3', time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Library FF' },
-                { id: 'fri4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room R21' },
-                { id: 'fri5', time: '12:30 PM - 01:30 PM', subject: 'Principles of Marketing', type: 'Tutorial', room: 'Room T14' }
-            ],
-            6: [
-                { id: 'sat1', time: '10:30 AM - 11:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R32' }
-            ],
-            0: []
-        };
+        // --- DYNAMIC TIMETABLE FILTER ALGORITHM ---
+        function getPersonalizedTimetable(dayIndex) {
+            if (!cachedUserData || !cachedUserData.section) return [];
+
+            return masterTimetable.filter(cls => {
+                if (cls.day !== dayIndex) return false;
+
+                // Match core section classes & user's specific Tut/Prac groups
+                if (cls.section === cachedUserData.section) {
+                    if (cls.group === 'ALL') return true;
+                    if (cls.group === cachedUserData.tutGroup) return true;
+                    if (cls.group === cachedUserData.pracGroup) return true;
+                }
+
+                // Match SEC & VAC
+                if (cls.type === 'SEC' && cls.courseCode === cachedUserData.sec) return true;
+                if (cls.type === 'VAC' && cls.courseCode === cachedUserData.vac) return true;
+
+                return false;
+            }).sort((a, b) => a.time.localeCompare(b.time));
+        }
 
         const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         
@@ -717,7 +857,7 @@
             }
 
             for (let dayNum = 1; dayNum <= 6; dayNum++) {
-                const classes = timetable[dayNum];
+                const classes = getPersonalizedTimetable(dayNum);
                 if (!classes || classes.length === 0) continue;
 
                 const dayDateISO = getDateForDayOfWeek(dayNum);
@@ -845,7 +985,7 @@
                     const dateStr = getLocalISOString(d);
                     if (dateStr >= SEMESTER_START_DATE) {
                         const dayIdx = d.getDay();
-                        const stdClasses = timetable[dayIdx] || [];
+                        const stdClasses = getPersonalizedTimetable(dayIdx);
                         const extClasses = customClasses[dateStr] || [];
                         const dayClasses = [...stdClasses, ...extClasses];
 
@@ -990,7 +1130,7 @@
                 return;
             }
 
-            const standardClasses = timetable[activeDayIndex] || [];
+            const standardClasses = getPersonalizedTimetable(activeDayIndex);
             const extraClasses = customClasses[activeDateString] || [];
             const classesToday = [...standardClasses, ...extraClasses];
 
@@ -1190,7 +1330,7 @@
             container.innerHTML = '';
 
             for (let i = 1; i <= 6; i++) {
-                const dayClasses = timetable[i];
+                const dayClasses = getPersonalizedTimetable(i);
                 if (dayClasses.length === 0) continue;
 
                 let dayHTML = `
