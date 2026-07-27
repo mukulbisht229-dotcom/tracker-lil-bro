@@ -123,7 +123,7 @@
                         <i class="ph ph-fire text-4xl text-orange-400"></i>
                         <div>
                             <p class="text-xs text-blue-200 uppercase tracking-widest font-semibold mb-1">Current Streak</p>
-                            <p class="text-2xl font-bold"><span id="streak-counter">0</span> Classes in a row</p>
+                            <p class="text-2xl font-bold"><span id="streak-counter">0</span> Days in a row</p>
                         </div>
                     </div>
                 </div>                
@@ -387,18 +387,27 @@
         }
 
         function updateStats() {
-            // Streak Calculation Logic
-            let currentStreak = 0;
-            const sortedRecords = Object.keys(attendanceRecords)
-                .map(key => ({ date: key.split('_')[0], status: attendanceRecords[key].status }))
-                .filter(record => record.status !== 'cancelled')
-                .sort((a, b) => b.date.localeCompare(a.date)); 
+            // NEW: Streak Calculation Logic (Chronological by DAY)
+            const recordsByDate = {};
+            for (const key in attendanceRecords) {
+                const date = key.split('_')[0];
+                const status = attendanceRecords[key].status;
+                if (status === 'cancelled') continue; // Ignore cancelled classes
+                
+                if (!recordsByDate[date]) recordsByDate[date] = { went: 0, skipped: 0 };
+                if (status === 'went') recordsByDate[date].went++;
+                if (status === 'skipped') recordsByDate[date].skipped++;
+            }
 
-            for (let i = 0; i < sortedRecords.length; i++) {
-                if (sortedRecords[i].status === 'went') {
-                    currentStreak++;
-                } else if (sortedRecords[i].status === 'skipped') {
-                    break; 
+            const sortedDates = Object.keys(recordsByDate).sort((a, b) => b.localeCompare(a));
+            
+            let currentStreak = 0;
+            for (const date of sortedDates) {
+                if (recordsByDate[date].skipped > 0) {
+                    break; // Streak instantly broken if you skipped even one class that day
+                }
+                if (recordsByDate[date].went > 0) {
+                    currentStreak++; // Earned +1 streak day for surviving all classes!
                 }
             }
             
