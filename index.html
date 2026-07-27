@@ -157,15 +157,23 @@
                     </div>
                 </div>
 
+                <!-- REPORT ANALYSIS & 65% RISK ENGINE WITH COLLAPSIBLE ARROW -->
                 <div class="mb-8 p-5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white border border-slate-700 shadow-xl">
-                    <div class="flex justify-between items-center mb-3">
+                    <div class="flex justify-between items-center cursor-pointer select-none" onclick="toggleReportAnalysis()">
                         <h3 class="text-sm font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
                             <i class="ph ph-chart-line-up text-lg"></i> Report Analysis (65% Risk Engine)
                         </h3>
-                        <span class="text-[10px] bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded border border-amber-500/30">Active</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded border border-amber-500/30">Active</span>
+                            <i id="report-chevron" class="ph ph-caret-up text-amber-400 text-xl transition-transform duration-300"></i>
+                        </div>
                     </div>
-                    <p class="text-xs text-slate-300 mb-4">Mathematical priority matrix tracking your proximity to the bare minimum 65% threshold and highlighting high-volatility subjects.</p>
-                    <div id="report-analysis-container" class="space-y-3"></div>
+                    
+                    <!-- Collapsible Body Container -->
+                    <div id="report-analysis-body" class="mt-3 pt-3 border-t border-slate-700/60 transition-all duration-300">
+                        <p class="text-xs text-slate-300 mb-4">Mathematical priority matrix tracking your proximity to the bare minimum 65% threshold and highlighting high-volatility subjects.</p>
+                        <div id="report-analysis-container" class="space-y-3"></div>
+                    </div>
                 </div>
 
                 <h3 class="font-semibold text-sm mb-4 uppercase tracking-wider text-gray-500">Subject Breakdown & Bunk Bank</h3>
@@ -382,7 +390,21 @@
             });
         }
 
-        // CORRECTED GOOGLE CALENDAR .ICS EXPORT GENERATOR
+        // TOGGLE COLLAPSIBLE REPORT ANALYSIS CARD
+        let isReportExpanded = true;
+        window.toggleReportAnalysis = function() {
+            isReportExpanded = !isReportExpanded;
+            const body = document.getElementById('report-analysis-body');
+            const chevron = document.getElementById('report-chevron');
+            if (isReportExpanded) {
+                body.classList.remove('hide');
+                chevron.classList.remove('rotate-180');
+            } else {
+                body.classList.add('hide');
+                chevron.classList.add('rotate-180');
+            }
+        };
+
         window.exportCalendar = function() {
             let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Trackr SRCC//Timetable//EN\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\n";
             
@@ -394,11 +416,10 @@
                 return String(hours).padStart(2, '0') + minutes + '00';
             }
 
-            // Calculate date of specific weekday in current week (dayNum: 1=Mon, ..., 6=Sat)
             function getDateForDayOfWeek(dayNum) {
                 const d = new Date();
                 const day = d.getDay();
-                const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Get Monday
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
                 const monday = new Date(d.setDate(diff));
                 
                 const targetDate = new Date(monday);
@@ -805,7 +826,7 @@
             } else {
                 overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-red-500';
                 overallStatus.innerText = 'Danger';
-                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400';
+                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-red-100 text-red-700 dark:text-red-900/50 dark:text-red-400';
             }
 
             renderReportAnalysis(subjectStats);
