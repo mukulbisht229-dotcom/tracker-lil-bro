@@ -73,8 +73,8 @@
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER (Hidden by default until logged in) -->
-    <div id="app-wrapper" class="max-w-md mx-auto bg-white dark:bg-gray-850 min-h-screen shadow-xl flex flex-col hide">
+    <!-- MAIN APP WRAPPER -->
+    <div id="app-wrapper" class="max-w-md mx-auto bg-white dark:bg-gray-850 min-h-screen shadow-xl flex flex-col hide relative">
         
         <!-- Header -->
         <header class="p-6 pb-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
@@ -90,7 +90,7 @@
                     <i class="ph ph-moon text-xl dark:hidden"></i>
                     <i class="ph ph-sun text-xl hidden dark:block text-yellow-400"></i>
                 </button>
-                <!-- Duolingo-style Header Streak -->
+                <!-- Gamified Streak Pill -->
                 <div id="streak-pill" class="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-3 py-1.5 rounded-full font-bold text-sm border border-orange-200 dark:border-orange-800/50 shadow-sm cursor-default">
                     <i class="ph-fill ph-fire text-lg"></i>
                     <span id="header-streak">0</span>
@@ -102,11 +102,11 @@
         <nav class="flex px-6 pt-4 space-x-6 border-b border-gray-200 dark:border-gray-700 font-medium text-sm">
             <button class="nav-tab active-tab pb-3 border-b-2 border-blue-600 text-blue-600 dark:text-blue-400" data-target="today-view">Today</button>
             <button class="nav-tab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200" data-target="stats-view">Stats</button>
-            <button class="nav-tab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200" data-target="timetable-view">Full Schedule</button>
+            <button class="nav-tab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200" data-target="timetable-view">Schedule</button>
         </nav>
 
         <!-- Main Content Area -->
-        <main class="flex-1 overflow-y-auto p-6">
+        <main class="flex-1 overflow-y-auto p-6 pb-12">
             
             <!-- VIEW: Today's Classes -->
             <section id="today-view" class="view-section">
@@ -117,6 +117,10 @@
                 <div id="today-classes-container" class="space-y-4">
                     <!-- Cards injected via JS -->
                 </div>
+                <!-- Extra Class Button -->
+                <button onclick="openExtraClassModal()" class="w-full mt-6 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 btn-transition flex items-center justify-center gap-2">
+                    <i class="ph ph-plus-circle text-lg"></i> Add Extra Class
+                </button>
             </section>
 
             <!-- VIEW: Statistics -->
@@ -135,9 +139,15 @@
                 </div>                
                 
                 <!-- Overall Progress -->
-                <div class="mb-8 p-5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Overall Attendance</h3>
-                    <div class="flex items-end justify-between mb-2">
+                <div class="mb-8 p-5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 relative">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Overall Attendance</h3>
+                        <!-- SHARE FLEX BUTTON -->
+                        <button onclick="shareStats()" class="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-md hover:scale-105 btn-transition">
+                            <i class="ph ph-share-network"></i> Share 🚀
+                        </button>
+                    </div>
+                    <div class="flex items-end justify-between mb-2 mt-1">
                         <span id="overall-percentage" class="text-4xl font-bold">0%</span>
                         <span id="overall-status" class="text-sm font-medium px-2 py-1 rounded">--</span>
                     </div>
@@ -145,12 +155,12 @@
                         <div id="overall-bar" class="h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
                     <p class="text-xs text-gray-400 mt-3 flex items-center gap-1">
-                        <i class="ph ph-info"></i> Target: Maintain above 75% threshold.
+                        <i class="ph ph-info"></i> Target: Maintain above 75% minimum.
                     </p>
                 </div>
 
-                <!-- Subject Breakdown -->
-                <h3 class="font-semibold text-sm mb-4 uppercase tracking-wider text-gray-500">Subject Breakdown</h3>
+                <!-- Subject Breakdown & Bunk Bank -->
+                <h3 class="font-semibold text-sm mb-4 uppercase tracking-wider text-gray-500">Subject Breakdown & Bunk Bank</h3>
                 <div id="subject-stats-container" class="space-y-5">
                     <!-- Stats injected via JS -->
                 </div>
@@ -163,8 +173,28 @@
                     <!-- Timetable injected via JS -->
                 </div>
             </section>
-
         </main>
+    </div>
+
+    <!-- EXTRA CLASS MODAL (Clean UI Overlay) -->
+    <div id="extra-class-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm hide transition-opacity duration-300">
+        <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-2xl w-[90%] max-w-sm border border-gray-100 dark:border-gray-700">
+            <h3 class="text-lg font-bold mb-4">Add Extra Class</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Subject Name</label>
+                    <input type="text" id="extra-subject" placeholder="e.g. Guest Lecture" class="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Time (Optional)</label>
+                    <input type="text" id="extra-time" placeholder="e.g. 02:00 PM" class="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeExtraClassModal()" class="flex-1 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
+                <button onclick="saveExtraClass()" class="flex-1 py-2.5 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition">Add Class</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -208,7 +238,6 @@
             getStartedBtn.classList.add('opacity-75', 'cursor-not-allowed');
             
             setTimeout(() => {
-                // Save user data securely to their local browser
                 localStorage.setItem('trackr_logged_in', 'true');
                 localStorage.setItem('trackr_user_name', nameVal);
                 localStorage.setItem('trackr_roll_number', rollVal);
@@ -230,65 +259,65 @@
         });
 
         logoutBtn.addEventListener('click', () => {
-            // Logs out and clears the session flag
             localStorage.removeItem('trackr_logged_in');
             appWrapper.classList.add('hide');
             loginScreen.classList.remove('hide');
             
-            // Auto-fills if they just want to log back in quickly
             const savedName = localStorage.getItem('trackr_user_name');
             const savedRoll = localStorage.getItem('trackr_roll_number');
             if(savedName) nameInput.value = savedName;
             if(savedRoll) rollInput.value = savedRoll;
         });
 
-
-        // --- APP LOGIC (Timetable & Attendance) ---
+        // --- APP LOGIC (Timetable, Storage, UI) ---
         const timetable = {
-            1: [ // Monday
-                { id: 'mon1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture (Dr. Shikha Gupta)', room: 'Room R2' },
-                { id: 'mon2', time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Lab (Group NP3)', room: 'Room T48' }
+            1: [
+                { id: 'mon1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Room R2' },
+                { id: 'mon2', time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Lab', room: 'Room T48' }
             ],
-            2: [ // Tuesday
-                { id: 'tue1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lab (Group NP3)', room: 'Library FF' },
-                { id: 'tue2', time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Lecture (Mr. Mohd. Hassan)', room: 'Room PB3' },
-                { id: 'tue3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Lecture (Dr. Franky Varah)', room: 'Room R16' },
-                { id: 'tue4', time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics', type: 'Lab (Group NP3)', room: 'Room R36' },
-                { id: 'tue5', time: '12:30 PM - 01:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Lecture (Mr. Rishabh Raj)', room: 'Room PB3' }
+            2: [
+                { id: 'tue1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lab', room: 'Library FF' },
+                { id: 'tue2', time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room PB3' },
+                { id: 'tue3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Lecture', room: 'Room R16' },
+                { id: 'tue4', time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics', type: 'Lab', room: 'Room R36' },
+                { id: 'tue5', time: '12:30 PM - 01:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room PB3' }
             ],
-            3: [ // Wednesday
-                { id: 'wed1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture (Dr. Shikha Gupta)', room: 'Room CL1' },
-                { id: 'wed2', time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Lab (Group NP3)', room: 'Room T41' },
-                { id: 'wed3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Lab/Class (Dr. Franky Varah)', room: 'Room R16' },
-                { id: 'wed4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture (Mr. Mohd. Hassan)', room: 'Room R10' }
+            3: [
+                { id: 'wed1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Room CL1' },
+                { id: 'wed2', time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Lab', room: 'Room T41' },
+                { id: 'wed3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Class', room: 'Room R16' },
+                { id: 'wed4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room R10' }
             ],
-            4: [ // Thursday
-                { id: 'thu1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture (Dr. Shruti Mallik)', room: 'Room R32' },
-                { id: 'thu2', time: '09:30 AM - 10:30 AM', subject: 'Environmental Science I', type: 'Lab/Class (Dr. Franky Varah)', room: 'Library FF' },
-                { id: 'thu3', time: '10:30 AM - 11:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture (Mr. Rishabh Raj)', room: 'Room R16' },
-                { id: 'thu4', time: '11:30 AM - 12:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Tutorial (Group N3)', room: 'Room T4' }
+            4: [
+                { id: 'thu1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R32' },
+                { id: 'thu2', time: '09:30 AM - 10:30 AM', subject: 'Environmental Science I', type: 'Class', room: 'Library FF' },
+                { id: 'thu3', time: '10:30 AM - 11:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room R16' },
+                { id: 'thu4', time: '11:30 AM - 12:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Tutorial', room: 'Room T4' }
             ],
-            5: [ // Friday
-                { id: 'fri1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture (Dr. Shruti Mallik)', room: 'Room R34' },
-                { id: 'fri2', time: '09:30 AM - 10:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture (Mr. Rishabh Raj)', room: 'Room PB2' },
-                { id: 'fri3', time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Lecture (Dr. Shikha Gupta)', room: 'Library FF' },
-                { id: 'fri4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture (Mr. Mohd. Hassan)', room: 'Room R21' },
-                { id: 'fri5', time: '12:30 PM - 01:30 PM', subject: 'Principles of Marketing', type: 'Tutorial (Group N3)', room: 'Room T14' }
+            5: [
+                { id: 'fri1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R34' },
+                { id: 'fri2', time: '09:30 AM - 10:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room PB2' },
+                { id: 'fri3', time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Library FF' },
+                { id: 'fri4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room R21' },
+                { id: 'fri5', time: '12:30 PM - 01:30 PM', subject: 'Principles of Marketing', type: 'Tutorial', room: 'Room T14' }
             ],
-            6: [ // Saturday
-                { id: 'sat1', time: '10:30 AM - 11:30 AM', subject: 'Financial Management', type: 'Lecture (Dr. Shruti Mallik)', room: 'Room R32' }
+            6: [
+                { id: 'sat1', time: '10:30 AM - 11:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R32' }
             ],
-            0: [] // Sunday
+            0: []
         };
 
         const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         let todayDateObj = new Date();
         let currentDayIndex = todayDateObj.getDay();
         let dateString = todayDateObj.toISOString().split('T')[0]; 
+        
         let attendanceRecords = {};
+        let customClasses = {}; // NEW: Storage for extra classes
 
         function initApp() {
             attendanceRecords = JSON.parse(localStorage.getItem('trackr_data')) || {};
+            customClasses = JSON.parse(localStorage.getItem('trackr_custom_classes')) || {};
             setupUI();
             renderTodayClasses();
             renderFullTimetable();
@@ -301,29 +330,18 @@
             document.getElementById('day-badge').innerText = daysOfWeek[currentDayIndex];
 
             const themeToggleBtn = document.getElementById('theme-toggle');
-            if (localStorage.getItem('trackr_theme') === 'light') {
-                document.documentElement.classList.remove('dark');
-            }
+            if (localStorage.getItem('trackr_theme') === 'light') document.documentElement.classList.remove('dark');
 
             const newThemeBtn = themeToggleBtn.cloneNode(true);
             themeToggleBtn.parentNode.replaceChild(newThemeBtn, themeToggleBtn);
-
             newThemeBtn.addEventListener('click', () => {
                 document.documentElement.classList.toggle('dark');
-                if (document.documentElement.classList.contains('dark')) {
-                    localStorage.setItem('trackr_theme', 'dark');
-                } else {
-                    localStorage.setItem('trackr_theme', 'light');
-                }
+                localStorage.setItem('trackr_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
             });
 
-            const tabs = document.querySelectorAll('.nav-tab');
-            const views = document.querySelectorAll('.view-section');
-
-            tabs.forEach(tab => {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
                 const newTab = tab.cloneNode(true);
                 tab.parentNode.replaceChild(newTab, tab);
-                
                 newTab.addEventListener('click', (e) => {
                     document.querySelectorAll('.nav-tab').forEach(t => {
                         t.classList.remove('active-tab', 'border-blue-600', 'text-blue-600', 'dark:text-blue-400');
@@ -333,38 +351,75 @@
                     e.target.classList.remove('border-transparent', 'text-gray-500');
 
                     const targetId = e.target.getAttribute('data-target');
-                    views.forEach(view => {
-                        if (view.id === targetId) {
-                            view.classList.remove('hide');
-                        } else {
-                            view.classList.add('hide');
-                        }
+                    document.querySelectorAll('.view-section').forEach(view => {
+                        view.classList.toggle('hide', view.id !== targetId);
                     });
-
                     if (targetId === 'stats-view') updateStats();
                 });
             });
         }
+
+        // EXTRA CLASS MODAL LOGIC
+        window.openExtraClassModal = () => document.getElementById('extra-class-modal').classList.remove('hide');
+        window.closeExtraClassModal = () => document.getElementById('extra-class-modal').classList.add('hide');
+        
+        window.saveExtraClass = () => {
+            const subject = document.getElementById('extra-subject').value.trim();
+            const time = document.getElementById('extra-time').value.trim() || 'Extra Class';
+            if (!subject) return;
+            
+            if (!customClasses[dateString]) customClasses[dateString] = [];
+            customClasses[dateString].push({
+                id: 'ext_' + Date.now(),
+                time: time,
+                subject: subject,
+                type: 'Ad-hoc',
+                room: 'TBD'
+            });
+            localStorage.setItem('trackr_custom_classes', JSON.stringify(customClasses));
+            
+            document.getElementById('extra-subject').value = '';
+            document.getElementById('extra-time').value = '';
+            closeExtraClassModal();
+            renderTodayClasses();
+        };
 
         window.markAttendance = function(classId, subject, status) {
             const recordKey = `${dateString}_${classId}`;
             attendanceRecords[recordKey] = { subject, status };
             localStorage.setItem('trackr_data', JSON.stringify(attendanceRecords));
             renderTodayClasses();
-            // Call updateStats to update the fire icon in real time
             updateStats();
         }
+
+        // SHARE VIRAL FLEX
+        window.shareStats = function() {
+            const pct = document.getElementById('overall-percentage').innerText;
+            const streak = document.getElementById('streak-counter').innerText;
+            const text = `🔥 ${streak}-Day Streak on Trackr!\n📊 Overall Attendance: ${pct}\nCan you beat my consistency?`;
+            
+            if (navigator.share) {
+                navigator.share({ title: 'My Trackr Stats', text: text }).catch(console.error);
+            } else {
+                navigator.clipboard.writeText(text);
+                alert("Stats copied to clipboard! Paste it in WhatsApp.");
+            }
+        };
 
         function renderTodayClasses() {
             const container = document.getElementById('today-classes-container');
             container.innerHTML = '';
-            const classesToday = timetable[currentDayIndex];
+            
+            // Merge regular timetable with today's custom added classes
+            const standardClasses = timetable[currentDayIndex] || [];
+            const extraClasses = customClasses[dateString] || [];
+            const classesToday = [...standardClasses, ...extraClasses];
 
-            if (!classesToday || classesToday.length === 0) {
+            if (classesToday.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-10 text-gray-500">
                         <i class="ph ph-coffee text-4xl mb-2"></i>
-                        <p>No classes scheduled for today. Enjoy your day off!</p>
+                        <p>No classes scheduled for today.</p>
                     </div>`;
                 return;
             }
@@ -379,6 +434,9 @@
                 if (record?.status === 'went') {
                     borderClass = 'border-green-500 dark:border-green-500';
                     indicatorClass = 'bg-green-500';
+                } else if (record?.status === 'eca') {
+                    borderClass = 'border-purple-500 dark:border-purple-500';
+                    indicatorClass = 'bg-purple-500';
                 } else if (record?.status === 'skipped') {
                     borderClass = 'border-red-500 dark:border-red-500';
                     indicatorClass = 'bg-red-500';
@@ -387,6 +445,7 @@
                     indicatorClass = 'bg-yellow-500';
                 }
 
+                // 2x2 Grid for buttons to keep UI super clean
                 const cardHTML = `
                     <div class="relative p-4 rounded-xl bg-white dark:bg-gray-850 border-l-4 shadow-sm ${borderClass} border-y border-r btn-transition">
                         <div class="flex justify-between items-start mb-3">
@@ -400,17 +459,17 @@
                             <div class="h-3 w-3 rounded-full ${indicatorClass}"></div>
                         </div>
                         
-                        <div class="flex space-x-2 mt-4 border-t border-gray-100 dark:border-gray-700 pt-3">
-                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'went')" 
-                                class="flex-1 py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'went' ? 'bg-green-50 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
+                        <div class="grid grid-cols-2 gap-2 mt-4 border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'went')" class="py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'went' ? 'bg-green-50 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
                                 <i class="ph ph-check-circle mr-1"></i> Went
                             </button>
-                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'skipped')" 
-                                class="flex-1 py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'skipped' ? 'bg-red-50 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
+                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'eca')" class="py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'eca' ? 'bg-purple-50 dark:bg-purple-900/30 border-purple-500 text-purple-700 dark:text-purple-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
+                                <i class="ph ph-briefcase mr-1"></i> Duty Leave
+                            </button>
+                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'skipped')" class="py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'skipped' ? 'bg-red-50 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
                                 <i class="ph ph-x-circle mr-1"></i> Skipped
                             </button>
-                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'cancelled')" 
-                                class="flex-1 py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'cancelled' ? 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-500 text-yellow-700 dark:text-yellow-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
+                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'cancelled')" class="py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'cancelled' ? 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-500 text-yellow-700 dark:text-yellow-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
                                 <i class="ph ph-warning-circle mr-1"></i> Cancelled
                             </button>
                         </div>
@@ -421,7 +480,6 @@
         }
 
         function updateStats() {
-            // Streak Calculation Logic (Chronological by DAY)
             const recordsByDate = {};
             for (const key in attendanceRecords) {
                 const date = key.split('_')[0];
@@ -429,7 +487,7 @@
                 if (status === 'cancelled') continue; 
                 
                 if (!recordsByDate[date]) recordsByDate[date] = { went: 0, skipped: 0 };
-                if (status === 'went') recordsByDate[date].went++;
+                if (status === 'went' || status === 'eca') recordsByDate[date].went++;
                 if (status === 'skipped') recordsByDate[date].skipped++;
             }
 
@@ -437,27 +495,20 @@
             
             let currentStreak = 0;
             for (const date of sortedDates) {
-                if (recordsByDate[date].skipped > 0) {
-                    break; 
-                }
-                if (recordsByDate[date].went > 0) {
-                    currentStreak++; 
-                }
+                if (recordsByDate[date].skipped > 0) break; 
+                if (recordsByDate[date].went > 0) currentStreak++; 
             }
             
-            if (document.getElementById('streak-counter')) {
-                document.getElementById('streak-counter').innerText = currentStreak;
-            }
+            if (document.getElementById('streak-counter')) document.getElementById('streak-counter').innerText = currentStreak;
 
             const headerStreak = document.getElementById('header-streak');
             if (headerStreak) {
-                // Trigger the pop animation if the number changes
                 if (headerStreak.innerText !== currentStreak.toString()) {
                     headerStreak.innerText = currentStreak;
                     const pill = document.getElementById('streak-pill');
                     if (pill) {
                         pill.classList.remove('pop-anim');
-                        void pill.offsetWidth; // Resets the animation
+                        void pill.offsetWidth; 
                         pill.classList.add('pop-anim');
                     }
                 } else {
@@ -471,16 +522,13 @@
 
             for (const key in attendanceRecords) {
                 const record = attendanceRecords[key];
-                
-                if (!subjectStats[record.subject]) {
-                    subjectStats[record.subject] = { attended: 0, total: 0 };
-                }
+                if (!subjectStats[record.subject]) subjectStats[record.subject] = { attended: 0, total: 0 };
                 
                 if (record.status !== 'cancelled') {
                     subjectStats[record.subject].total++;
                     totalClasses++;
-                    
-                    if (record.status === 'went') {
+                    // ECA counts as attended for overall percentage!
+                    if (record.status === 'went' || record.status === 'eca') {
                         subjectStats[record.subject].attended++;
                         totalAttended++;
                     }
@@ -523,16 +571,33 @@
                 const subPct = Math.round((data.attended / data.total) * 100);
                 const barColor = subPct >= 75 ? 'bg-green-500' : 'bg-red-500';
                 
+                // BUNK BANK ALGORITHM
+                let safeStatusText = '';
+                if (subPct >= 75) {
+                    const safeSkips = Math.floor((data.attended - 0.75 * data.total) / 0.75);
+                    if (safeSkips > 0) {
+                        safeStatusText = `<span class="text-green-600 dark:text-green-400 font-bold bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">🟢 ${safeSkips} Safe Skips</span>`;
+                    } else {
+                        safeStatusText = `<span class="text-yellow-600 dark:text-yellow-400 font-bold bg-yellow-50 dark:bg-yellow-900/30 px-2 py-0.5 rounded">🟡 On the edge</span>`;
+                    }
+                } else {
+                    const needed = Math.ceil((0.75 * data.total - data.attended) / 0.25);
+                    safeStatusText = `<span class="text-red-600 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded">🔴 Need ${needed} to recover</span>`;
+                }
+                
                 statsContainer.innerHTML += `
                     <div>
                         <div class="flex justify-between text-sm mb-1">
-                            <span class="font-medium max-w-[70%] truncate" title="${subject}">${subject}</span>
+                            <span class="font-medium max-w-[65%] truncate" title="${subject}">${subject}</span>
                             <span class="font-bold ${subPct >= 75 ? 'text-green-500' : 'text-red-500'}">${subPct}%</span>
                         </div>
                         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                             <div class="${barColor} h-1.5 rounded-full" style="width: ${subPct}%"></div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1 text-right">${data.attended} / ${data.total} attended</p>
+                        <p class="text-[11px] sm:text-xs mt-1.5 flex justify-between items-center">
+                            <span class="text-gray-500 font-medium">${data.attended} / ${data.total} attended</span>
+                            ${safeStatusText}
+                        </p>
                     </div>
                 `;
             }
@@ -571,7 +636,6 @@
             }
         }
 
-        // Boot up the auth check on page load
         document.addEventListener('DOMContentLoaded', checkAuth);
     </script>
 </body>
