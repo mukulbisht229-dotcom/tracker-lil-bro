@@ -247,6 +247,8 @@
         const logoutBtn = document.getElementById('logout-btn');
         const greetingText = document.getElementById('greeting-text');
 
+        const SEMESTER_START_DATE = '2027-07-28';
+
         function checkAuth() {
             const isLoggedIn = localStorage.getItem('trackr_logged_in');
             const savedName = localStorage.getItem('trackr_user_name');
@@ -347,7 +349,6 @@
 
         const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         
-        // Helper to get local YYYY-MM-DD avoiding UTC date shifts
         function getLocalISOString(d) {
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
@@ -355,8 +356,9 @@
             return `${year}-${month}-${day}`;
         }
 
-        let activeDateObj = new Date();
-        let activeDateString = getLocalISOString(activeDateObj); 
+        // Initialize to semester start date (28th July 2027)
+        let activeDateObj = new Date(2027, 6, 28);
+        let activeDateString = SEMESTER_START_DATE; 
         let activeDayIndex = activeDateObj.getDay();
         
         let attendanceRecords = {};
@@ -407,13 +409,13 @@
             });
         }
 
-        // DATE PICKER WITH LOCAL TIMEZONE FIX
+        // DATE PICKER RESTRICTED FROM SEMESTER START DATE (2027-07-28)
         function setupDatePicker() {
             const datePicker = document.getElementById('attendance-date-picker');
             if (datePicker) {
-                const todayLocalStr = getLocalISOString(new Date());
+                datePicker.min = SEMESTER_START_DATE;
+                datePicker.max = '2027-12-31';
                 datePicker.value = activeDateString;
-                datePicker.max = todayLocalStr; // Correct local max date
                 
                 datePicker.onchange = (e) => {
                     const selectedVal = e.target.value;
@@ -459,7 +461,7 @@
             }
 
             function getDateForDayOfWeek(dayNum) {
-                const now = new Date();
+                const now = new Date(2027, 6, 28); // Semester start reference week
                 const currentDay = now.getDay();
                 const distanceToMonday = (currentDay === 0 ? -6 : 1) - currentDay;
                 
@@ -520,6 +522,7 @@
         window.closeMonthlyModal = () => document.getElementById('monthly-modal').classList.add('hide');
         
         window.saveExtraClass = () => {
+            if (activeDateString < SEMESTER_START_DATE) return;
             const subject = document.getElementById('extra-subject').value.trim();
             const time = document.getElementById('extra-time').value.trim() || 'Extra Class';
             if (!subject) return;
@@ -541,6 +544,7 @@
         };
 
         window.markAttendance = function(classId, subject, status) {
+            if (activeDateString < SEMESTER_START_DATE) return;
             const recordKey = `${activeDateString}_${classId}`;
             attendanceRecords[recordKey] = { subject, status };
             localStorage.setItem('trackr_data', JSON.stringify(attendanceRecords));
@@ -571,7 +575,7 @@
 
             for (const key in attendanceRecords) {
                 const datePart = key.split('_')[0];
-                if (datePart && datePart.length >= 7) {
+                if (datePart && datePart >= SEMESTER_START_DATE) {
                     monthsSet.add(datePart.substring(0, 7));
                 }
             }
@@ -594,35 +598,36 @@
                 let d = new Date(firstDay);
                 while (d <= lastDay) {
                     const dateStr = getLocalISOString(d);
-                    const dayIdx = d.getDay();
-                    const stdClasses = timetable[dayIdx] || [];
-                    const extClasses = customClasses[dateStr] || [];
-                    const dayClasses = [...stdClasses, ...extClasses];
+                    if (dateStr >= SEMESTER_START_DATE) {
+                        const dayIdx = d.getDay();
+                        const stdClasses = timetable[dayIdx] || [];
+                        const extClasses = customClasses[dateStr] || [];
+                        const dayClasses = [...stdClasses, ...extClasses];
 
-                    const todayISO = getLocalISOString(new Date());
-                    const isPastOrToday = dateStr <= todayISO;
+                        const todayISO = getLocalISOString(new Date(2027, 6, 28));
+                        const isPastOrToday = dateStr <= todayISO;
 
-                    dayClasses.forEach(cls => {
-                        const sub = cls.subject;
-                        if (!subjectData[sub]) {
-                            subjectData[sub] = { pastTotal: 0, pastAttended: 0, upcomingTotal: 0 };
-                        }
-
-                        const recordKey = `${dateStr}_${cls.id}`;
-                        const record = attendanceRecords[recordKey];
-
-                        if (isPastOrToday) {
-                            if (record?.status !== 'cancelled') {
-                                subjectData[sub].pastTotal++;
-                                if (record?.status === 'went' || record?.status === 'eca') {
-                                    subjectData[sub].pastAttended++;
-                                }
+                        dayClasses.forEach(cls => {
+                            const sub = cls.subject;
+                            if (!subjectData[sub]) {
+                                subjectData[sub] = { pastTotal: 0, pastAttended: 0, upcomingTotal: 0 };
                             }
-                        } else {
-                            subjectData[sub].upcomingTotal++;
-                        }
-                    });
 
+                            const recordKey = `${dateStr}_${cls.id}`;
+                            const record = attendanceRecords[recordKey];
+
+                            if (isPastOrToday) {
+                                if (record?.status !== 'cancelled') {
+                                    subjectData[sub].pastTotal++;
+                                    if (record?.status === 'went' || record?.status === 'eca') {
+                                        subjectData[sub].pastAttended++;
+                                    }
+                                }
+                            } else {
+                                subjectData[sub].upcomingTotal++;
+                            }
+                        });
+                    }
                     d.setDate(d.getDate() + 1);
                 }
 
@@ -677,7 +682,7 @@
 
             const subjects = Object.entries(subjectStats);
             if (subjects.length === 0) {
-                container.innerHTML = '<p class="text-xs text-slate-400">Run simulation or record attendance to activate report analysis.</p>';
+                container.innerHTML = '<p class="text-xs text-slate-400">Record attendance starting July 28, 2027 to activate report analysis.</p>';
                 return;
             }
 
@@ -730,6 +735,17 @@
             const container = document.getElementById('today-classes-container');
             container.innerHTML = '';
             
+            // Check if date is before semester kickoff
+            if (activeDateString < SEMESTER_START_DATE) {
+                container.innerHTML = `
+                    <div class="text-center py-12 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <i class="ph ph-lock text-4xl text-amber-500 mb-2"></i>
+                        <h3 class="font-bold text-base mb-1">Classes Have Not Started Yet</h3>
+                        <p class="text-xs text-gray-500">The official SRCC semester begins on July 28, 2027.</p>
+                    </div>`;
+                return;
+            }
+
             const standardClasses = timetable[activeDayIndex] || [];
             const extraClasses = customClasses[activeDateString] || [];
             const classesToday = [...standardClasses, ...extraClasses];
@@ -801,6 +817,7 @@
             const recordsByDate = {};
             for (const key in attendanceRecords) {
                 const date = key.split('_')[0];
+                if (date < SEMESTER_START_DATE) continue;
                 const status = attendanceRecords[key].status;
                 if (status === 'cancelled') continue; 
                 
@@ -839,6 +856,9 @@
             const subjectStats = {};
 
             for (const key in attendanceRecords) {
+                const date = key.split('_')[0];
+                if (date < SEMESTER_START_DATE) continue;
+
                 const record = attendanceRecords[key];
                 if (!subjectStats[record.subject]) subjectStats[record.subject] = { attended: 0, total: 0 };
                 
@@ -871,7 +891,7 @@
             } else {
                 overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-red-500';
                 overallStatus.innerText = 'Danger';
-                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-red-100 text-red-700 dark:text-red-900/50 dark:text-red-400';
+                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400';
             }
 
             renderReportAnalysis(subjectStats);
