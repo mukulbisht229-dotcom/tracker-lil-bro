@@ -157,6 +157,14 @@
                     <p class="text-xs text-gray-400 mt-3 flex items-center gap-1">
                         <i class="ph ph-info"></i> Target: Maintain above 75% minimum.
                     </p>
+
+                    <!-- TRIGGER FOR MONTHLY AUDIT MODAL -->
+                    <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Want a deep-dive audit?</span>
+                        <button onclick="openMonthlyModal()" class="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg hover:scale-105 btn-transition">
+                            <i class="ph ph-calendar-blank"></i> Monthly Audit ➔
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Subject Breakdown & Bunk Bank -->
@@ -194,6 +202,24 @@
                 <button onclick="closeExtraClassModal()" class="flex-1 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
                 <button onclick="saveExtraClass()" class="flex-1 py-2.5 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-700 transition">Add Class</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MONTHLY AUDIT MODAL -->
+    <div id="monthly-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm hide transition-opacity duration-300">
+        <div class="bg-white dark:bg-gray-850 p-6 rounded-2xl shadow-2xl w-[92%] max-w-md max-h-[85vh] overflow-y-auto border border-gray-100 dark:border-gray-700">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i class="ph ph-calendar-check text-blue-600"></i> Monthly Attendance Audit
+                </h3>
+                <button onclick="closeMonthlyModal()" class="p-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+            <div id="monthly-audit-container" class="space-y-6">
+                <!-- Dynamically populated monthly blocks -->
+            </div>
+            <button onclick="closeMonthlyModal()" class="w-full mt-6 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">Close Audit</button>
         </div>
     </div>
 
@@ -359,8 +385,15 @@
             });
         }
 
+        // MODAL CONTROLS
         window.openExtraClassModal = () => document.getElementById('extra-class-modal').classList.remove('hide');
         window.closeExtraClassModal = () => document.getElementById('extra-class-modal').classList.add('hide');
+        
+        window.openMonthlyModal = () => {
+            renderMonthlyAudit();
+            document.getElementById('monthly-modal').classList.remove('hide');
+        };
+        window.closeMonthlyModal = () => document.getElementById('monthly-modal').classList.add('hide');
         
         window.saveExtraClass = () => {
             const subject = document.getElementById('extra-subject').value.trim();
@@ -404,6 +437,118 @@
             }
         };
 
+        // RENDER MONTHLY AUDIT LOGIC
+        function renderMonthlyAudit() {
+            const container = document.getElementById('monthly-audit-container');
+            container.innerHTML = '';
+
+            const monthsSet = new Set();
+            const currentMonthStr = `${todayDateObj.getFullYear()}-${String(todayDateObj.getMonth() + 1).padStart(2, '0')}`;
+            monthsSet.add(currentMonthStr);
+
+            for (const key in attendanceRecords) {
+                const datePart = key.split('_')[0];
+                if (datePart && datePart.length >= 7) {
+                    monthsSet.add(datePart.substring(0, 7));
+                }
+            }
+
+            const sortedMonths = Array.from(monthsSet).sort((a, b) => b.localeCompare(a));
+
+            if (sortedMonths.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">No data available for monthly audit.</p>';
+                return;
+            }
+
+            sortedMonths.forEach(monthKey => {
+                const [year, month] = monthKey.split('-').map(Number);
+                const monthName = new Date(year, month - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+                const firstDay = new Date(year, month - 1, 1);
+                const lastDay = new Date(year, month, 0);
+
+                const subjectData = {}; // { subject: { pastTotal: 0, pastAttended: 0, upcomingTotal: 0 } }
+
+                let d = new Date(firstDay);
+                while (d <= lastDay) {
+                    const dateStr = d.toISOString().split('T')[0];
+                    const dayIdx = d.getDay();
+                    const stdClasses = timetable[dayIdx] || [];
+                    const extClasses = customClasses[dateStr] || [];
+                    const dayClasses = [...stdClasses, ...extClasses];
+
+                    const isPastOrToday = dateStr <= todayDateObj.toISOString().split('T')[0];
+
+                    dayClasses.forEach(cls => {
+                        const sub = cls.subject;
+                        if (!subjectData[sub]) {
+                            subjectData[sub] = { pastTotal: 0, pastAttended: 0, upcomingTotal: 0 };
+                        }
+
+                        const recordKey = `${dateStr}_${cls.id}`;
+                        const record = attendanceRecords[recordKey];
+
+                        if (isPastOrToday) {
+                            if (record?.status !== 'cancelled') {
+                                subjectData[sub].pastTotal++;
+                                if (record?.status === 'went' || record?.status === 'eca') {
+                                    subjectData[sub].pastAttended++;
+                                }
+                            }
+                        } else {
+                            subjectData[sub].upcomingTotal++;
+                        }
+                    });
+
+                    d.setDate(d.getDate() + 1);
+                }
+
+                let monthHtml = `
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                        <h4 class="font-bold text-base text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-2">
+                            <i class="ph ph-calendar"></i> ${monthName}
+                        </h4>
+                        <div class="space-y-4">
+                `;
+
+                let hasSubjectsInMonth = false;
+                for (const [sub, data] of Object.entries(subjectData)) {
+                    if (data.pastTotal === 0 && data.upcomingTotal === 0) continue;
+                    hasSubjectsInMonth = true;
+
+                    const pct = data.pastTotal === 0 ? 0 : Math.round((data.pastAttended / data.pastTotal) * 100);
+                    const badgeColor = pct >= 75 ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400';
+
+                    monthHtml += `
+                        <div class="bg-white dark:bg-gray-850 p-3 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-bold text-sm truncate max-w-[70%]" title="${sub}">${sub}</span>
+                                <span class="text-xs font-bold px-2 py-0.5 rounded ${badgeColor}">${data.pastTotal > 0 ? pct + '%' : 'No past classes'}</span>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+                                <div class="bg-blue-50/50 dark:bg-blue-900/20 p-2 rounded-md">
+                                    <p class="text-gray-500 font-semibold uppercase text-[10px]">Completed Audit</p>
+                                    <p class="font-bold text-gray-800 dark:text-gray-200 mt-0.5">${data.pastAttended} / ${data.pastTotal} Attended</p>
+                                </div>
+                                <div class="bg-indigo-50/50 dark:bg-indigo-900/20 p-2 rounded-md">
+                                    <p class="text-gray-500 font-semibold uppercase text-[10px]">Upcoming Forecast</p>
+                                    <p class="font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">${data.upcomingTotal} Classes Left</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if (!hasSubjectsInMonth) {
+                    monthHtml += `<p class="text-xs text-gray-500 italic">No classes scheduled in this month.</p>`;
+                }
+
+                monthHtml += `</div></div>`;
+                container.innerHTML += monthHtml;
+            });
+        }
+
         function renderTodayClasses() {
             const container = document.getElementById('today-classes-container');
             container.innerHTML = '';
@@ -442,7 +587,6 @@
                     indicatorClass = 'bg-yellow-500';
                 }
 
-                // Styled with distinct attractive colors for Time and Location
                 const cardHTML = `
                     <div class="relative p-4 rounded-xl bg-white dark:bg-gray-850 border-l-4 shadow-sm ${borderClass} border-y border-r btn-transition">
                         <div class="flex justify-between items-start mb-3">
