@@ -45,25 +45,31 @@
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-300">
 
-    <!-- LOGIN SCREEN -->
+    <!-- LOGIN / ONBOARDING SCREEN -->
     <div id="login-screen" class="fixed inset-0 z-50 bg-gray-50 dark:bg-gray-900 flex flex-col justify-center items-center px-6 transition-opacity duration-500">
         <div class="max-w-sm w-full bg-white dark:bg-gray-850 rounded-2xl shadow-xl p-8 text-center border border-gray-100 dark:border-gray-800">
             <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i class="ph ph-graduation-cap text-3xl text-blue-600 dark:text-blue-400"></i>
             </div>
             <h1 class="text-2xl font-bold tracking-tight mb-2">Welcome to Trackr.</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Sign in to manage your SRCC timetable and track your attendance.</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Enter your details to set up your personal SRCC attendance tracker.</p>
             
-            <button id="google-login-btn" class="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium py-3 px-4 rounded-xl shadow-sm btn-transition hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                <!-- Google 'G' SVG Logo -->
-                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                <span id="login-text">Sign in with Google</span>
-            </button>
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">First Name</label>
+                    <input type="text" id="user-name-input" placeholder="e.g. Mukul" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" autocomplete="off" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Roll Number</label>
+                    <input type="text" id="user-roll-input" placeholder="e.g. 23BC229" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" autocomplete="off" required>
+                </div>
+                
+                <button id="get-started-btn" class="w-full mt-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm btn-transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                    <span id="login-text">Get Started</span>
+                    <i class="ph ph-arrow-right font-bold"></i>
+                </button>
+                <p id="login-error" class="text-red-500 text-xs text-center font-medium hide mt-2">Please fill in both fields to continue.</p>
+            </div>
         </div>
     </div>
 
@@ -73,7 +79,7 @@
         <!-- Header -->
         <header class="p-6 pb-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Trackr.</h1>
+                <h1 id="greeting-text" class="text-2xl font-bold tracking-tight">Trackr.</h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="current-date-display">Today</p>
             </div>
             <div class="flex items-center gap-3">
@@ -162,16 +168,22 @@
     </div>
 
     <script>
-        // --- AUTHENTICATION LOGIC (Simulated) ---
+        // --- ONBOARDING & AUTHENTICATION LOGIC ---
         const loginScreen = document.getElementById('login-screen');
         const appWrapper = document.getElementById('app-wrapper');
-        const loginBtn = document.getElementById('google-login-btn');
-        const loginText = document.getElementById('login-text');
+        const getStartedBtn = document.getElementById('get-started-btn');
+        const nameInput = document.getElementById('user-name-input');
+        const rollInput = document.getElementById('user-roll-input');
+        const loginError = document.getElementById('login-error');
         const logoutBtn = document.getElementById('logout-btn');
+        const greetingText = document.getElementById('greeting-text');
 
         function checkAuth() {
             const isLoggedIn = localStorage.getItem('trackr_logged_in');
-            if (isLoggedIn === 'true') {
+            const savedName = localStorage.getItem('trackr_user_name');
+            
+            if (isLoggedIn === 'true' && savedName) {
+                greetingText.innerText = `Hello, ${savedName} 👋`;
                 loginScreen.classList.add('hide');
                 appWrapper.classList.remove('hide');
                 initApp(); 
@@ -181,12 +193,27 @@
             }
         }
 
-        loginBtn.addEventListener('click', () => {
-            loginText.innerText = "Signing in...";
-            loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
+        getStartedBtn.addEventListener('click', () => {
+            const nameVal = nameInput.value.trim();
+            const rollVal = rollInput.value.trim();
+
+            if (!nameVal || !rollVal) {
+                loginError.classList.remove('hide');
+                return;
+            }
+            loginError.classList.add('hide');
+
+            const loginText = document.getElementById('login-text');
+            loginText.innerText = "Setting up...";
+            getStartedBtn.classList.add('opacity-75', 'cursor-not-allowed');
             
             setTimeout(() => {
+                // Save user data securely to their local browser
                 localStorage.setItem('trackr_logged_in', 'true');
+                localStorage.setItem('trackr_user_name', nameVal);
+                localStorage.setItem('trackr_roll_number', rollVal);
+                
+                greetingText.innerText = `Hello, ${nameVal} 👋`;
                 loginScreen.classList.add('fade-out');
                 
                 setTimeout(() => {
@@ -194,18 +221,25 @@
                     loginScreen.classList.remove('fade-out');
                     appWrapper.classList.remove('hide');
                     
-                    loginText.innerText = "Sign in with Google";
-                    loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    loginText.innerText = "Get Started";
+                    getStartedBtn.classList.remove('opacity-75', 'cursor-not-allowed');
                     
                     initApp();
                 }, 500); 
-            }, 1200); 
+            }, 800); 
         });
 
         logoutBtn.addEventListener('click', () => {
+            // Logs out and clears the session flag
             localStorage.removeItem('trackr_logged_in');
             appWrapper.classList.add('hide');
             loginScreen.classList.remove('hide');
+            
+            // Auto-fills if they just want to log back in quickly
+            const savedName = localStorage.getItem('trackr_user_name');
+            const savedRoll = localStorage.getItem('trackr_roll_number');
+            if(savedName) nameInput.value = savedName;
+            if(savedRoll) rollInput.value = savedRoll;
         });
 
 
@@ -387,12 +421,12 @@
         }
 
         function updateStats() {
-            // NEW: Streak Calculation Logic (Chronological by DAY)
+            // Streak Calculation Logic (Chronological by DAY)
             const recordsByDate = {};
             for (const key in attendanceRecords) {
                 const date = key.split('_')[0];
                 const status = attendanceRecords[key].status;
-                if (status === 'cancelled') continue; // Ignore cancelled classes
+                if (status === 'cancelled') continue; 
                 
                 if (!recordsByDate[date]) recordsByDate[date] = { went: 0, skipped: 0 };
                 if (status === 'went') recordsByDate[date].went++;
@@ -404,10 +438,10 @@
             let currentStreak = 0;
             for (const date of sortedDates) {
                 if (recordsByDate[date].skipped > 0) {
-                    break; // Streak instantly broken if you skipped even one class that day
+                    break; 
                 }
                 if (recordsByDate[date].went > 0) {
-                    currentStreak++; // Earned +1 streak day for surviving all classes!
+                    currentStreak++; 
                 }
             }
             
