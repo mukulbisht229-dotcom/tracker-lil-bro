@@ -63,9 +63,9 @@
     <div id="login-screen" class="fixed inset-0 z-50 bg-gray-50/90 dark:bg-gray-900/95 backdrop-blur-md flex flex-col justify-center items-center px-4 transition-opacity duration-500">
         <div class="max-w-md w-full bg-white dark:bg-gray-850 rounded-3xl shadow-2xl p-8 text-center border border-gray-100 dark:border-gray-800/80 relative overflow-hidden">
             
-            <!-- Interactive Cursor-Tracking Emoji -->
-            <div id="cursor-emoji-container" class="w-20 h-20 bg-blue-50 dark:bg-blue-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner cursor-pointer select-none">
-                <span id="cursor-emoji" class="text-4xl transition-transform duration-100 ease-out inline-block">👀</span>
+            <!-- Original Graduation Cap Icon -->
+            <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/40 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-inner">
+                <i class="ph ph-graduation-cap text-3xl text-blue-600 dark:text-blue-400"></i>
             </div>
 
             <h1 class="text-2xl font-extrabold tracking-tight mb-1">SRCC Trackr</h1>
@@ -302,23 +302,6 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-
-        // Cursor-tracking emoji effect
-        document.addEventListener('mousemove', (e) => {
-            const emoji = document.getElementById('cursor-emoji');
-            const container = document.getElementById('cursor-emoji-container');
-            if (!emoji || !container) return;
-            const rect = container.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            const deltaX = e.clientX - centerX;
-            const deltaY = e.clientY - centerY;
-            const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-            const distance = Math.min(Math.hypot(deltaX, deltaY) / 30, 8);
-            const moveX = Math.cos(angle * Math.PI / 180) * distance;
-            const moveY = Math.sin(angle * Math.PI / 180) * distance;
-            emoji.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.1)';`;
-        });
 
         let currentAuthMode = 'signin'; 
 
