@@ -105,19 +105,19 @@
         <!-- Main Content Area -->
         <main class="flex-1 overflow-y-auto p-6 pb-12">
             
-            <!-- VIEW: Today's / Back-dated Classes -->
+            <!-- VIEW: Today's Classes -->
             <section id="today-view" class="view-section">
                 <!-- Back-Dating Date Picker Bar -->
                 <div class="mb-5 flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div class="flex items-center gap-2">
                         <i class="ph ph-calendar-blank text-blue-600 dark:text-blue-400 text-lg"></i>
-                        <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Audit Date:</span>
+                        <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wide">Select Date:</span>
                     </div>
                     <input type="date" id="attendance-date-picker" class="px-3 py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white">
                 </div>
 
                 <h2 class="text-lg font-semibold mb-4 flex items-center justify-between">
-                    <span id="classes-title">Classes for Today</span>
+                    <span>Classes for Today</span>
                     <span id="day-badge" class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md"></span>
                 </h2>
                 <div id="today-classes-container" class="space-y-4"></div>
@@ -347,9 +347,16 @@
 
         const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         
-        // Active viewing date state (Defaults to today, but adjustable via date picker)
+        // Helper to get local YYYY-MM-DD avoiding UTC date shifts
+        function getLocalISOString(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
         let activeDateObj = new Date();
-        let activeDateString = activeDateObj.toISOString().split('T')[0]; 
+        let activeDateString = getLocalISOString(activeDateObj); 
         let activeDayIndex = activeDateObj.getDay();
         
         let attendanceRecords = {};
@@ -400,31 +407,26 @@
             });
         }
 
-        // BACK-DATING DATE PICKER SETUP
+        // DATE PICKER WITH LOCAL TIMEZONE FIX
         function setupDatePicker() {
             const datePicker = document.getElementById('attendance-date-picker');
             if (datePicker) {
+                const todayLocalStr = getLocalISOString(new Date());
                 datePicker.value = activeDateString;
-                datePicker.max = new Date().toISOString().split('T')[0]; // Can't mark future dates
+                datePicker.max = todayLocalStr; // Correct local max date
                 
                 datePicker.onchange = (e) => {
                     const selectedVal = e.target.value;
                     if (!selectedVal) return;
 
-                    // Fix timezone offset issue when parsing date string YYYY-MM-DD
                     const parts = selectedVal.split('-');
                     activeDateObj = new Date(parts[0], parts[1] - 1, parts[2]);
                     activeDateString = selectedVal;
                     activeDayIndex = activeDateObj.getDay();
 
-                    // Update UI labels
                     document.getElementById('day-badge').innerText = daysOfWeek[activeDayIndex];
                     const options = { weekday: 'long', day: 'numeric', month: 'short' };
                     document.getElementById('current-date-display').innerText = activeDateObj.toLocaleDateString('en-US', options);
-                    
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    const titleText = activeDateString === todayStr ? "Classes for Today" : `Classes for ${activeDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} (Back-dated)`;
-                    document.getElementById('classes-title').innerText = titleText;
 
                     renderTodayClasses();
                 };
@@ -466,7 +468,7 @@
                 
                 const targetDate = new Date(monday.getTime());
                 targetDate.setDate(monday.getDate() + (dayNum - 1));
-                return targetDate.toISOString().split('T')[0].replace(/-/g, '');
+                return getLocalISOString(targetDate).replace(/-/g, '');
             }
 
             for (let dayNum = 1; dayNum <= 6; dayNum++) {
@@ -591,13 +593,13 @@
                 const subjectData = {};
                 let d = new Date(firstDay);
                 while (d <= lastDay) {
-                    const dateStr = d.toISOString().split('T')[0];
+                    const dateStr = getLocalISOString(d);
                     const dayIdx = d.getDay();
                     const stdClasses = timetable[dayIdx] || [];
                     const extClasses = customClasses[dateStr] || [];
                     const dayClasses = [...stdClasses, ...extClasses];
 
-                    const todayISO = new Date().toISOString().split('T')[0];
+                    const todayISO = getLocalISOString(new Date());
                     const isPastOrToday = dateStr <= todayISO;
 
                     dayClasses.forEach(cls => {
