@@ -68,7 +68,12 @@
                 <h1 class="text-2xl font-bold tracking-tight">Trackr.</h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="current-date-display">Today</p>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
+                <!-- NEW: Duolingo-style Header Streak -->
+                <div class="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-3 py-1.5 rounded-full font-bold text-sm border border-orange-200 dark:border-orange-800/50 shadow-sm cursor-default hover:scale-105 btn-transition">
+                    <i class="ph-fill ph-fire text-lg"></i>
+                    <span id="header-streak">0</span>
+                </div>
                 <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 btn-transition hover:scale-105">
                     <i class="ph ph-moon text-xl dark:hidden"></i>
                     <i class="ph ph-sun text-xl hidden dark:block text-yellow-400"></i>
@@ -389,6 +394,9 @@
             }
             if (document.getElementById('streak-counter')) {
                 document.getElementById('streak-counter').innerText = currentStreak;
+            }
+            if (document.getElementById('header-streak')) {
+                document.getElementById('header-streak').innerText = currentStreak;
             }
 
             let totalClasses = 0;
