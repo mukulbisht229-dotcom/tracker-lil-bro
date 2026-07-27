@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trackr | College Timetable & Attendance</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: { 850: '#1f2937', 900: '#111827' }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .btn-transition { transition: all 0.2s ease-in-out; }
+        .hide { display: none !important; }
+        .fade-out { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-300">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-gray-50 dark:bg-gray-900 flex flex-col justify-center items-center px-6 transition-opacity duration-500">
+        <div class="max-w-sm w-full bg-white dark:bg-gray-850 rounded-2xl shadow-xl p-8 text-center border border-gray-100 dark:border-gray-800">
+            <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="ph ph-graduation-cap text-3xl text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight mb-2">Welcome to Trackr.</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Sign in to manage your SRCC timetable and track your attendance.</p>
+            
+            <button id="google-login-btn" class="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium py-3 px-4 rounded-xl shadow-sm btn-transition hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+                <!-- Google 'G' SVG Logo -->
+                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span id="login-text">Sign in with Google</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER (Hidden by default until logged in) -->
+    <div id="app-wrapper" class="max-w-md mx-auto bg-white dark:bg-gray-850 min-h-screen shadow-xl flex flex-col hide">
+        
+        <!-- Header -->
+        <header class="p-6 pb-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">Trackr.</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="current-date-display">Today</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 btn-transition hover:scale-105">
+                    <i class="ph ph-moon text-xl dark:hidden"></i>
+                    <i class="ph ph-sun text-xl hidden dark:block text-yellow-400"></i>
+                </button>
+                <button id="logout-btn" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 btn-transition hover:scale-105 text-red-500" title="Sign Out">
+                    <i class="ph ph-sign-out text-xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="flex px-6 pt-4 space-x-6 border-b border-gray-200 dark:border-gray-700 font-medium text-sm">
+            <button class="nav-tab active-tab pb-3 border-b-2 border-blue-600 text-blue-600 dark:text-blue-400" data-target="today-view">Today</button>
+            <button class="nav-tab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200" data-target="stats-view">Stats</button>
+            <button class="nav-tab pb-3 border-b-2 border-transparent text-gray-500 hover:text-gray-800 dark:hover:text-gray-200" data-target="timetable-view">Full Schedule</button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-6">
+            
+            <!-- VIEW: Today's Classes -->
+            <section id="today-view" class="view-section">
+                <h2 class="text-lg font-semibold mb-4 flex items-center justify-between">
+                    <span>Today's Classes</span>
+                    <span id="day-badge" class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md"></span>
+                </h2>
+                <div id="today-classes-container" class="space-y-4">
+                    <!-- Cards injected via JS -->
+                </div>
+            </section>
+
+            <!-- VIEW: Statistics -->
+            <section id="stats-view" class="view-section hide">
+                <h2 class="text-lg font-semibold mb-6">Attendance Analytics</h2>
+                
+                <!-- Overall Progress -->
+                <div class="mb-8 p-5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Overall Attendance</h3>
+                    <div class="flex items-end justify-between mb-2">
+                        <span id="overall-percentage" class="text-4xl font-bold">0%</span>
+                        <span id="overall-status" class="text-sm font-medium px-2 py-1 rounded">--</span>
+                    </div>
+                    <div class="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2.5">
+                        <div id="overall-bar" class="h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-3 flex items-center gap-1">
+                        <i class="ph ph-info"></i> Target: Maintain above 75% threshold.
+                    </p>
+                </div>
+
+                <!-- Subject Breakdown -->
+                <h3 class="font-semibold text-sm mb-4 uppercase tracking-wider text-gray-500">Subject Breakdown</h3>
+                <div id="subject-stats-container" class="space-y-5">
+                    <!-- Stats injected via JS -->
+                </div>
+            </section>
+
+            <!-- VIEW: Full Timetable -->
+            <section id="timetable-view" class="view-section hide">
+                <h2 class="text-lg font-semibold mb-4">Weekly Schedule</h2>
+                <div id="full-timetable-container" class="space-y-6">
+                    <!-- Timetable injected via JS -->
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        // --- AUTHENTICATION LOGIC (Simulated) ---
+        const loginScreen = document.getElementById('login-screen');
+        const appWrapper = document.getElementById('app-wrapper');
+        const loginBtn = document.getElementById('google-login-btn');
+        const loginText = document.getElementById('login-text');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        function checkAuth() {
+            const isLoggedIn = localStorage.getItem('trackr_logged_in');
+            if (isLoggedIn === 'true') {
+                loginScreen.classList.add('hide');
+                appWrapper.classList.remove('hide');
+                initApp(); // Only load the app data if logged in
+            } else {
+                loginScreen.classList.remove('hide');
+                appWrapper.classList.add('hide');
+            }
+        }
+
+        loginBtn.addEventListener('click', () => {
+            // Simulate a loading state for realism
+            loginText.innerText = "Signing in...";
+            loginBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            
+            setTimeout(() => {
+                localStorage.setItem('trackr_logged_in', 'true');
+                loginScreen.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    loginScreen.classList.add('hide');
+                    loginScreen.classList.remove('fade-out');
+                    appWrapper.classList.remove('hide');
+                    
+                    // Reset button state for next time
+                    loginText.innerText = "Sign in with Google";
+                    loginBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    
+                    initApp();
+                }, 500); // Wait for fade out
+            }, 1200); // 1.2 second fake loading delay
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('trackr_logged_in');
+            appWrapper.classList.add('hide');
+            loginScreen.classList.remove('hide');
+        });
+
+
+        // --- APP LOGIC (Timetable & Attendance) ---
+        const timetable = {
+            1: [ // Monday
+                { id: 'mon1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture (Dr. Shikha Gupta)', room: 'Room R2' },
+                { id: 'mon2', time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Lab (Group NP3)', room: 'Room T48' }
+            ],
+            2: [ // Tuesday
+                { id: 'tue1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lab (Group NP3)', room: 'Library FF' },
+                { id: 'tue2', time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Lecture (Mr. Mohd. Hassan)', room: 'Room PB3' },
+                { id: 'tue3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Lecture (Dr. Franky Varah)', room: 'Room R16' },
+                { id: 'tue4', time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics', type: 'Lab (Group NP3)', room: 'Room R36' },
+                { id: 'tue5', time: '12:30 PM - 01:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Lecture (Mr. Rishabh Raj)', room: 'Room PB3' }
+            ],
+            3: [ // Wednesday
+                { id: 'wed1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture (Dr. Shikha Gupta)', room: 'Room CL1' },
+                { id: 'wed2', time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Lab (Group NP3)', room: 'Room T41' },
+                { id: 'wed3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Lab/Class (Dr. Franky Varah)', room: 'Room R16' },
+                { id: 'wed4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture (Mr. Mohd. Hassan)', room: 'Room R10' }
+            ],
+            4: [ // Thursday
+                { id: 'thu1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture (Dr. Shruti Mallik)', room: 'Room R32' },
+                { id: 'thu2', time: '09:30 AM - 10:30 AM', subject: 'Environmental Science I', type: 'Lab/Class (Dr. Franky Varah)', room: 'Library FF' },
+                { id: 'thu3', time: '10:30 AM - 11:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture (Mr. Rishabh Raj)', room: 'Room R16' },
+                { id: 'thu4', time: '11:30 AM - 12:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Tutorial (Group N3)', room: 'Room T4' }
+            ],
+            5: [ // Friday
+                { id: 'fri1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture (Dr. Shruti Mallik)', room: 'Room R34' },
+                { id: 'fri2', time: '09:30 AM - 10:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture (Mr. Rishabh Raj)', room: 'Room PB2' },
+                { id: 'fri3', time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Lecture (Dr. Shikha Gupta)', room: 'Library FF' },
+                { id: 'fri4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture (Mr. Mohd. Hassan)', room: 'Room R21' },
+                { id: 'fri5', time: '12:30 PM - 01:30 PM', subject: 'Principles of Marketing', type: 'Tutorial (Group N3)', room: 'Room T14' }
+            ],
+            6: [ // Saturday
+                { id: 'sat1', time: '10:30 AM - 11:30 AM', subject: 'Financial Management', type: 'Lecture (Dr. Shruti Mallik)', room: 'Room R32' }
+            ],
+            0: [] // Sunday
+        };
+
+        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        let todayDateObj = new Date();
+        let currentDayIndex = todayDateObj.getDay();
+        let dateString = todayDateObj.toISOString().split('T')[0]; 
+        let attendanceRecords = {};
+
+        function initApp() {
+            attendanceRecords = JSON.parse(localStorage.getItem('trackr_data')) || {};
+            setupUI();
+            renderTodayClasses();
+            renderFullTimetable();
+            updateStats();
+        }
+
+        function setupUI() {
+            const options = { weekday: 'long', day: 'numeric', month: 'short' };
+            document.getElementById('current-date-display').innerText = todayDateObj.toLocaleDateString('en-US', options);
+            document.getElementById('day-badge').innerText = daysOfWeek[currentDayIndex];
+
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            if (localStorage.getItem('trackr_theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Remove old listeners to prevent duplicates if logged in multiple times
+            const newThemeBtn = themeToggleBtn.cloneNode(true);
+            themeToggleBtn.parentNode.replaceChild(newThemeBtn, themeToggleBtn);
+
+            newThemeBtn.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.setItem('trackr_theme', 'dark');
+                } else {
+                    localStorage.setItem('trackr_theme', 'light');
+                }
+            });
+
+            const tabs = document.querySelectorAll('.nav-tab');
+            const views = document.querySelectorAll('.view-section');
+
+            tabs.forEach(tab => {
+                const newTab = tab.cloneNode(true);
+                tab.parentNode.replaceChild(newTab, tab);
+                
+                newTab.addEventListener('click', (e) => {
+                    document.querySelectorAll('.nav-tab').forEach(t => {
+                        t.classList.remove('active-tab', 'border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+                        t.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    e.target.classList.add('active-tab', 'border-blue-600', 'text-blue-600', 'dark:text-blue-400');
+                    e.target.classList.remove('border-transparent', 'text-gray-500');
+
+                    const targetId = e.target.getAttribute('data-target');
+                    views.forEach(view => {
+                        if (view.id === targetId) {
+                            view.classList.remove('hide');
+                        } else {
+                            view.classList.add('hide');
+                        }
+                    });
+
+                    if (targetId === 'stats-view') updateStats();
+                });
+            });
+        }
+
+        window.markAttendance = function(classId, subject, status) {
+            const recordKey = `${dateString}_${classId}`;
+            attendanceRecords[recordKey] = { subject, status };
+            localStorage.setItem('trackr_data', JSON.stringify(attendanceRecords));
+            renderTodayClasses();
+        }
+
+        function renderTodayClasses() {
+            const container = document.getElementById('today-classes-container');
+            container.innerHTML = '';
+            const classesToday = timetable[currentDayIndex];
+
+            if (!classesToday || classesToday.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 text-gray-500">
+                        <i class="ph ph-coffee text-4xl mb-2"></i>
+                        <p>No classes scheduled for today. Enjoy your day off!</p>
+                    </div>`;
+                return;
+            }
+
+            classesToday.forEach(cls => {
+                const recordKey = `${dateString}_${cls.id}`;
+                const record = attendanceRecords[recordKey];
+                
+                let borderClass = 'border-gray-200 dark:border-gray-700';
+                let indicatorClass = 'bg-gray-200 dark:bg-gray-700';
+                
+                if (record?.status === 'went') {
+                    borderClass = 'border-green-500 dark:border-green-500';
+                    indicatorClass = 'bg-green-500';
+                } else if (record?.status === 'skipped') {
+                    borderClass = 'border-red-500 dark:border-red-500';
+                    indicatorClass = 'bg-red-500';
+                }
+
+                const cardHTML = `
+                    <div class="relative p-4 rounded-xl bg-white dark:bg-gray-850 border-l-4 shadow-sm ${borderClass} border-y border-r btn-transition">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <span class="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-wider uppercase">${cls.time}</span>
+                                <h3 class="text-base font-bold leading-tight mt-1">${cls.subject}</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1">
+                                    <i class="ph ph-map-pin"></i> ${cls.room} &nbsp;&bull;&nbsp; ${cls.type}
+                                </p>
+                            </div>
+                            <div class="h-3 w-3 rounded-full ${indicatorClass}"></div>
+                        </div>
+                        
+                        <div class="flex space-x-2 mt-4 border-t border-gray-100 dark:border-gray-700 pt-3">
+                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'went')" 
+                                class="flex-1 py-2 rounded-lg text-sm font-medium border btn-transition ${record?.status === 'went' ? 'bg-green-50 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
+                                <i class="ph ph-check-circle mr-1"></i> Went
+                            </button>
+                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'skipped')" 
+                                class="flex-1 py-2 rounded-lg text-sm font-medium border btn-transition ${record?.status === 'skipped' ? 'bg-red-50 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
+                                <i class="ph ph-x-circle mr-1"></i> Skipped
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        function updateStats() {
+            let totalClasses = 0;
+            let totalAttended = 0;
+            const subjectStats = {};
+
+            for (const key in attendanceRecords) {
+                const record = attendanceRecords[key];
+                
+                if (!subjectStats[record.subject]) {
+                    subjectStats[record.subject] = { attended: 0, total: 0 };
+                }
+                
+                subjectStats[record.subject].total++;
+                totalClasses++;
+                
+                if (record.status === 'went') {
+                    subjectStats[record.subject].attended++;
+                    totalAttended++;
+                }
+            }
+
+            const overallPercentage = totalClasses === 0 ? 0 : Math.round((totalAttended / totalClasses) * 100);
+            const overallBar = document.getElementById('overall-bar');
+            const overallText = document.getElementById('overall-percentage');
+            const overallStatus = document.getElementById('overall-status');
+
+            overallText.innerText = `${overallPercentage}%`;
+            overallBar.style.width = `${overallPercentage}%`;
+
+            if (overallPercentage >= 75) {
+                overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-green-500';
+                overallStatus.innerText = 'Safe';
+                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400';
+            } else if (overallPercentage > 0) {
+                overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-red-500';
+                overallStatus.innerText = 'Danger';
+                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400';
+            } else {
+                overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-gray-400';
+                overallStatus.innerText = 'No Data';
+                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+            }
+
+            const statsContainer = document.getElementById('subject-stats-container');
+            statsContainer.innerHTML = '';
+
+            if (Object.keys(subjectStats).length === 0) {
+                statsContainer.innerHTML = '<p class="text-sm text-gray-500">No attendance data recorded yet.</p>';
+                return;
+            }
+
+            for (const [subject, data] of Object.entries(subjectStats)) {
+                const subPct = Math.round((data.attended / data.total) * 100);
+                const barColor = subPct >= 75 ? 'bg-green-500' : 'bg-red-500';
+                
+                statsContainer.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-medium max-w-[70%] truncate" title="${subject}">${subject}</span>
+                            <span class="font-bold ${subPct >= 75 ? 'text-green-500' : 'text-red-500'}">${subPct}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                            <div class="${barColor} h-1.5 rounded-full" style="width: ${subPct}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1 text-right">${data.attended} / ${data.total} attended</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderFullTimetable() {
+            const container = document.getElementById('full-timetable-container');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= 6; i++) {
+                const dayClasses = timetable[i];
+                if (dayClasses.length === 0) continue;
+
+                let dayHTML = `
+                    <div class="mb-6">
+                        <h3 class="font-bold text-gray-900 dark:text-gray-100 mb-3 border-b border-gray-200 dark:border-gray-700 pb-1">${daysOfWeek[i]}</h3>
+                        <div class="space-y-2">
+                `;
+
+                dayClasses.forEach(cls => {
+                    dayHTML += `
+                        <div class="flex bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-sm border border-gray-100 dark:border-gray-700">
+                            <div class="w-24 flex-shrink-0 text-gray-500 text-xs font-semibold mt-0.5">
+                                ${cls.time.split(' - ')[0]}<br>${cls.time.split(' - ')[1]}
+                            </div>
+                            <div class="flex-1 ml-2 border-l border-gray-300 dark:border-gray-600 pl-3">
+                                <p class="font-bold">${cls.subject}</p>
+                                <p class="text-xs text-gray-500 mt-1">${cls.type} &bull; ${cls.room}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                dayHTML += `</div></div>`;
+                container.innerHTML += dayHTML;
+            }
+        }
+
+        // Boot up the auth check on page load
+        document.addEventListener('DOMContentLoaded', checkAuth);
+    </script>
+</body>
+</html>
