@@ -20,10 +20,19 @@
     </script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
+   <style>
         .btn-transition { transition: all 0.2s ease-in-out; }
         .hide { display: none !important; }
         .fade-out { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        
+        /* NEW: Smooth animation for switching tabs */
+        @keyframes fadeSlideUp {
+            0% { opacity: 0; transform: translateY(12px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .view-section:not(.hide) {
+            animation: fadeSlideUp 0.4s ease-out forwards;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-300">
