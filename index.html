@@ -121,7 +121,6 @@
             <section id="stats-view" class="view-section hide">
                 <h2 class="text-lg font-semibold mb-6">Attendance Analytics</h2>
                 
-                <!-- Streak Counter Card -->
                 <div class="mb-6 flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg btn-transition hover:scale-[1.02]">
                     <div class="flex items-center gap-4">
                         <i class="ph ph-fire text-4xl text-orange-400"></i>
@@ -132,7 +131,6 @@
                     </div>
                 </div>                
                 
-                <!-- Overall Progress -->
                 <div class="mb-6 p-5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 relative">
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Overall Attendance</h3>
@@ -159,7 +157,6 @@
                     </div>
                 </div>
 
-                <!-- REPORT ANALYSIS & 65% RISK ENGINE -->
                 <div class="mb-8 p-5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white border border-slate-700 shadow-xl">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-sm font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
@@ -171,7 +168,6 @@
                     <div id="report-analysis-container" class="space-y-3"></div>
                 </div>
 
-                <!-- Subject Breakdown & Bunk Bank -->
                 <h3 class="font-semibold text-sm mb-4 uppercase tracking-wider text-gray-500">Subject Breakdown & Bunk Bank</h3>
                 <div id="subject-stats-container" class="space-y-5"></div>
             </section>
@@ -180,7 +176,6 @@
             <section id="timetable-view" class="view-section hide">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-semibold">Weekly Schedule</h2>
-                    <!-- GOOGLE CALENDAR SYNC BUTTON -->
                     <button onclick="exportCalendar()" class="flex items-center gap-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-xl shadow-sm btn-transition">
                         <i class="ph ph-calendar-plus text-base"></i> Sync to Calendar (.ics)
                     </button>
@@ -387,29 +382,39 @@
             });
         }
 
-        // GOOGLE CALENDAR .ICS EXPORT GENERATOR
+        // CORRECTED GOOGLE CALENDAR .ICS EXPORT GENERATOR
         window.exportCalendar = function() {
             let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Trackr SRCC//Timetable//EN\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\n";
             
-            // Helper to parse time string like "08:30 AM - 09:30 AM"
-            const todayISO = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            function parseTime12to24(timeStr) {
+                let [time, modifier] = timeStr.trim().split(' ');
+                let [hours, minutes] = time.split(':');
+                if (hours === '12') hours = '00';
+                if (modifier === 'PM' || modifier === 'pm') hours = parseInt(hours, 10) + 12;
+                return String(hours).padStart(2, '0') + minutes + '00';
+            }
+
+            // Calculate date of specific weekday in current week (dayNum: 1=Mon, ..., 6=Sat)
+            function getDateForDayOfWeek(dayNum) {
+                const d = new Date();
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Get Monday
+                const monday = new Date(d.setDate(diff));
+                
+                const targetDate = new Date(monday);
+                targetDate.setDate(monday.getDate() + (dayNum - 1));
+                return targetDate.toISOString().split('T')[0].replace(/-/g, '');
+            }
 
             for (let dayNum = 1; dayNum <= 6; dayNum++) {
                 const classes = timetable[dayNum];
                 if (!classes || classes.length === 0) continue;
 
+                const dayDateISO = getDateForDayOfWeek(dayNum);
+
                 classes.forEach(cls => {
                     const times = cls.time.split(' - ');
                     if (times.length < 2) return;
-
-                    // Convert 12hr time to 24hr format for ICS
-                    function parseTime12to24(timeStr) {
-                        let [time, modifier] = timeStr.trim().split(' ');
-                        let [hours, minutes] = time.split(':');
-                        if (hours === '12') hours = '00';
-                        if (modifier === 'PM' || modifier === 'pm') hours = parseInt(hours, 10) + 12;
-                        return String(hours).padStart(2, '0') + minutes + '00';
-                    }
 
                     const startTime = parseTime12to24(times[0]);
                     const endTime = parseTime12to24(times[1]);
@@ -419,8 +424,8 @@
                     icsContent += `LOCATION:${cls.room}, SRCC\n`;
                     icsContent += `DESCRIPTION:SRCC Lecture - Type: ${cls.type}\\nRoom: ${cls.room}\n`;
                     icsContent += `RRULE:FREQ=WEEKLY;COUNT=16\n`;
-                    icsContent += `DTSTART:${todayISO}T${startTime}\n`;
-                    icsContent += `DTEND:${todayISO}T${endTime}\n`;
+                    icsContent += `DTSTART:${dayDateISO}T${startTime}\n`;
+                    icsContent += `DTEND:${dayDateISO}T${endTime}\n`;
                     icsContent += "END:VEVENT\n";
                 });
             }
@@ -437,7 +442,7 @@
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
             
-            alert("📅 Timetable .ics file downloaded successfully! Open Google Calendar Settings ➔ Import & Export to sync your calendar instantly.");
+            alert("📅 Timetable .ics file successfully updated! Import it into Google Calendar to view all days correctly.");
         };
 
         window.openExtraClassModal = () => document.getElementById('extra-class-modal').classList.remove('hide');
