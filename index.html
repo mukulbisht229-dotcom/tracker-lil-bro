@@ -325,6 +325,9 @@
                 } else if (record?.status === 'skipped') {
                     borderClass = 'border-red-500 dark:border-red-500';
                     indicatorClass = 'bg-red-500';
+                } else if (record?.status === 'cancelled') {
+                    borderClass = 'border-yellow-500 dark:border-yellow-500';
+                    indicatorClass = 'bg-yellow-500';
                 }
 
                 const cardHTML = `
@@ -342,12 +345,16 @@
                         
                         <div class="flex space-x-2 mt-4 border-t border-gray-100 dark:border-gray-700 pt-3">
                             <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'went')" 
-                                class="flex-1 py-2 rounded-lg text-sm font-medium border btn-transition ${record?.status === 'went' ? 'bg-green-50 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
+                                class="flex-1 py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'went' ? 'bg-green-50 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
                                 <i class="ph ph-check-circle mr-1"></i> Went
                             </button>
                             <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'skipped')" 
-                                class="flex-1 py-2 rounded-lg text-sm font-medium border btn-transition ${record?.status === 'skipped' ? 'bg-red-50 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
+                                class="flex-1 py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'skipped' ? 'bg-red-50 dark:bg-red-900/30 border-red-500 text-red-700 dark:text-red-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
                                 <i class="ph ph-x-circle mr-1"></i> Skipped
+                            </button>
+                            <button onclick="markAttendance('${cls.id}', '${cls.subject}', 'cancelled')" 
+                                class="flex-1 py-1.5 rounded-lg text-xs font-medium border btn-transition ${record?.status === 'cancelled' ? 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-500 text-yellow-700 dark:text-yellow-400' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}">
+                                <i class="ph ph-warning-circle mr-1"></i> Cancelled
                             </button>
                         </div>
                     </div>
@@ -355,7 +362,6 @@
                 container.innerHTML += cardHTML;
             });
         }
-
         function updateStats() {
             let totalClasses = 0;
             let totalAttended = 0;
@@ -368,12 +374,15 @@
                     subjectStats[record.subject] = { attended: 0, total: 0 };
                 }
                 
-                subjectStats[record.subject].total++;
-                totalClasses++;
-                
-                if (record.status === 'went') {
-                    subjectStats[record.subject].attended++;
-                    totalAttended++;
+                // NEW: Only count it in the math if the class actually happened!
+                if (record.status !== 'cancelled') {
+                    subjectStats[record.subject].total++;
+                    totalClasses++;
+                    
+                    if (record.status === 'went') {
+                        subjectStats[record.subject].attended++;
+                        totalAttended++;
+                    }
                 }
             }
 
@@ -385,18 +394,18 @@
             overallText.innerText = `${overallPercentage}%`;
             overallBar.style.width = `${overallPercentage}%`;
 
-            if (overallPercentage >= 75) {
-                overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-green-500';
-                overallStatus.innerText = 'Safe';
-                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400';
-            } else if (overallPercentage > 0) {
-                overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-red-500';
-                overallStatus.innerText = 'Danger';
-                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400';
-            } else {
+            if (totalClasses === 0) {
                 overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-gray-400';
                 overallStatus.innerText = 'No Data';
                 overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
+            } else if (overallPercentage >= 75) {
+                overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-green-500';
+                overallStatus.innerText = 'Safe';
+                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-400';
+            } else {
+                overallBar.className = 'h-2.5 rounded-full transition-all duration-500 bg-red-500';
+                overallStatus.innerText = 'Danger';
+                overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400';
             }
 
             const statsContainer = document.getElementById('subject-stats-container');
@@ -408,6 +417,8 @@
             }
 
             for (const [subject, data] of Object.entries(subjectStats)) {
+                if (data.total === 0) continue; // Hide the subject if all its classes were cancelled
+                
                 const subPct = Math.round((data.attended / data.total) * 100);
                 const barColor = subPct >= 75 ? 'bg-green-500' : 'bg-red-500';
                 
@@ -424,9 +435,7 @@
                     </div>
                 `;
             }
-        }
-
-        function renderFullTimetable() {
+        }function renderFullTimetable() {
             const container = document.getElementById('full-timetable-container');
             container.innerHTML = '';
 
