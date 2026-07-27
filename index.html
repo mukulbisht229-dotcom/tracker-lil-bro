@@ -102,8 +102,18 @@
 
             <!-- VIEW: Statistics -->
             <section id="stats-view" class="view-section hide">
-                <h2 class="text-lg font-semibold mb-6">Attendance Analytics</h2>
+<h2 class="text-lg font-semibold mb-6">Attendance Analytics</h2>
                 
+                <!-- NEW: Streak Counter Card -->
+                <div class="mb-6 flex items-center justify-between p-5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg btn-transition hover:scale-[1.02]">
+                    <div class="flex items-center gap-4">
+                        <i class="ph ph-fire text-4xl text-orange-400"></i>
+                        <div>
+                            <p class="text-xs text-blue-200 uppercase tracking-widest font-semibold mb-1">Current Streak</p>
+                            <p class="text-2xl font-bold"><span id="streak-counter">0</span> Classes in a row</p>
+                        </div>
+                    </div>
+                </div>                
                 <!-- Overall Progress -->
                 <div class="mb-8 p-5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Overall Attendance</h3>
@@ -363,6 +373,24 @@
             });
         }
         function updateStats() {
+            // NEW: Streak Calculation Logic (Chronological)
+            let currentStreak = 0;
+            const sortedRecords = Object.keys(attendanceRecords)
+                .map(key => ({ date: key.split('_')[0], status: attendanceRecords[key].status }))
+                .filter(record => record.status !== 'cancelled')
+                .sort((a, b) => b.date.localeCompare(a.date)); // Sorts newest to oldest
+
+            for (let i = 0; i < sortedRecords.length; i++) {
+                if (sortedRecords[i].status === 'went') {
+                    currentStreak++;
+                } else if (sortedRecords[i].status === 'skipped') {
+                    break; // Streak broken, stop counting
+                }
+            }
+            if (document.getElementById('streak-counter')) {
+                document.getElementById('streak-counter').innerText = currentStreak;
+            }
+
             let totalClasses = 0;
             let totalAttended = 0;
             const subjectStats = {};
