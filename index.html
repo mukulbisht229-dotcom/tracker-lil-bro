@@ -298,41 +298,418 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- THE SRCC DIRECTORY LOOKUP DATABASE ---
-        // This validates the Roll Number and maps their exact groups
-        const studentDirectory = {
-            "25BC120": { name: "Arvin Albert", section: "A", tutGroup: "A2", pracGroup: "AP2", sec: "SEC2", vac: "VAC6" },
-            "25BC310": { name: "Krishna Chandra Dharua", section: "I", tutGroup: "I3", pracGroup: "IP3", sec: "SEC4", vac: "VAC7" },
-            "25BC281": { name: "Kartikey Tiwari", section: "N", tutGroup: "N2", pracGroup: "NP2", sec: "SEC20", vac: "VAC29" },
-            "25BC794": { name: "Vihaan Lamba", section: "L", tutGroup: "L2", pracGroup: "LP2", sec: "SEC3", vac: "VAC14" },
-            "25BC100": { name: "Anurag Saini", section: "A", tutGroup: "A1", pracGroup: "AP1", sec: "SEC8", vac: "VAC6" },
-            "25BC031": { name: "Abhinav", section: "A", tutGroup: "A1", pracGroup: "AP1", sec: "SEC8", vac: "VAC27" }
-            // NOTE: You will insert your full batch JSON list here
-        };
+        // --- FULL COMPREHENSIVE SRCC DIRECTORY PARSER ---
+        // Dynamically processes data provided by user files to prevent massive hardcoding string length limitations
+        const rawStudents = [
+            // SECTION A[cite: 1]
+            ["25BC100", "Anurag Saini", "A", "A1", "AP1", "SEC8", "VAC6"], //[cite: 1, 3]
+            ["25BC113", "Arjan Singh Bhambra", "A", "A1", "AP1", "", ""], //[cite: 1]
+            ["25BC115", "Arohi Verma", "A", "A1", "AP1", "", ""], //[cite: 1]
+            ["25BC120", "Arvin Albert", "A", "A2", "AP2", "SEC2", "VAC6"], //[cite: 1, 3]
+            ["25BC125", "Asmi Saini", "A", "A2", "AP2", "SEC2", "VAC6"], //[cite: 1, 3]
+            ["25BC126", "Astik Upadhyay", "A", "A2", "AP2", "SEC21", "VAC6"], //[cite: 1, 3]
+            ["25BC134", "Avni Narayan Toshniwa", "A", "A2", "AP2", "SEC12", "VAC6"], //[cite: 1, 3]
+            ["25BC153", "Biplob Payeng", "A", "A2", "AP2", "", ""], //[cite: 1]
+            ["25BC165", "Darshan dangi", "A", "A2", "AP2", "SEC2", "VAC6"], //[cite: 1, 3]
+            ["25BC172", "Deetya Bala", "A", "A2", "AP2", "SEC14", "VAC7"], //[cite: 1, 3]
+            ["25BC188", "Divya Meshram", "A", "A2", "AP2", "", ""], //[cite: 1]
+            ["25BC202", "Garima Kulhari", "A", "A2", "AP2", "", ""], //[cite: 1]
+            ["25BC210", "Gauri Chatwani", "A", "A2", "AP2", "", ""], //[cite: 1]
+            ["25BC212", "Gazal Aggarwal", "A", "A2", "AP2", "", ""], //[cite: 1]
+            ["25BC225", "Harsh raj", "A", "A2", "AP2", "SEC2", "VAC7"], //[cite: 1, 3]
+            ["25BC238", "Himesh Harsh", "A", "A2", "AP2", "", ""], //[cite: 1]
+            ["25BC460", "Rakshit Gupta", "A", "A3", "AP3", "SEC6", "VAC28"], //[cite: 1, 3]
+            ["25BC474", "Rinkesh", "A", "A3", "AP3", "", ""], //[cite: 1]
+            ["25BC514", "Samman Giri", "A", "A3", "AP3", "SEC13", "VAC28"], //[cite: 1, 3]
+            ["25BC569", "Shuvodeep Sarkar", "A", "A3", "AP3", "", ""], //[cite: 1]
+            ["25BC715", "Ashish Rawat", "A", "A3", "AP3", "", ""], //[cite: 1]
+            ["25BC731", "Kunga Choedzom", "A", "A3", "AP3", "", ""], //[cite: 1]
+            ["25BC786", "Samkit Jain", "A", "A3", "AP3", "SEC19", "VAC28"], //[cite: 1, 3]
+            ["25BC788", "Shawn Mathew", "A", "A3", "AP3", "SEC19", "VAC28"], //[cite: 1, 3]
+            
+            // SECTION B[cite: 1]
+            ["25BC409", "Paridhi Kiran", "B", "B1", "BP1", "SEC9", "VAC8"], //[cite: 1, 3]
+            ["25BC412", "Payal", "B", "B1", "BP1", "SEC12", "VAC8"], //[cite: 1, 3]
+            ["25BC424", "Pragati Kumari", "B", "B1", "BP1", "SEC12", "VAC8"], //[cite: 1, 3]
+            ["25BC427", "Prakash kumar", "B", "B2", "BP2", "", ""], //[cite: 1]
+            ["25BC432", "Pratigya Sharma", "B", "B2", "BP2", "", ""], //[cite: 1]
+            ["25BC434", "Pravit Chopra", "B", "B2", "BP2", "", ""], //[cite: 1]
+            ["25BC437", "Priti goyal", "B", "B2", "BP2", "", ""], //[cite: 1]
+            ["25BC449", "Rabani Kaur", "B", "B2", "BP2", "", ""], //[cite: 1]
+            ["25BC451", "Rachit Joshi", "B", "B2", "BP2", "", ""], //[cite: 1]
+            ["25BC465", "Rene Chiara Momin", "B", "B2", "BP2", "SEC3", "VAC8"], //[cite: 1, 3]
+            ["25BC469", "Ridhima Dugar", "B", "B2", "BP2", "SEC9", "VAC8"], //[cite: 1, 3]
+            ["25BC472", "Ridhima Sukriti", "B", "B2", "BP2", "SEC23", "VAC8"], //[cite: 1, 3]
+            ["25BC492", "Rudra Mahesh Purohit", "B", "B2", "BP2", "", ""], //[cite: 1]
+            ["25BC513", "Samir Naagar", "B", "B2", "BP2", "SEC13", "VAC8"], //[cite: 1, 3]
+            ["25BC518", "Sanchay tripathi", "B", "B2", "BP2", "SEC15", "VAC8"], //[cite: 1, 3]
+            ["25BC519", "Sanchita Priyadarshini Bara", "B", "B2", "BP2", "SEC22", "VAC8"], //[cite: 1, 3]
+            ["25BC735", "Prakriti Saraff", "B", "B3", "BP3", "", ""], //[cite: 1]
+            ["25BC742", "Nistha Jain", "B", "B3", "BP3", "SEC10", "VAC9"], //[cite: 1, 3]
+            ["25BC750", "Aadarsh Saria", "B", "B3", "BP3", "SEC13", "VAC9"], //[cite: 1, 3]
+            ["25BC761", "Ranbir", "B", "B3", "BP3", "", ""], //[cite: 1]
+            ["25BC778", "Ishvi Aggarwal", "B", "B3", "BP3", "", ""], //[cite: 1]
+            ["25BC790", "Sundram Kumar", "B", "B3", "BP3", "SEC13", "VAC9"], //[cite: 1, 3]
+            ["25BC799", "Anshika Singh Kathayat", "B", "B3", "BP3", "SEC3", "VAC9"], //[cite: 1, 3]
+            ["25BC813", "Nikita Parmar", "B", "B3", "BP3", "", ""], //[cite: 1]
+
+            // SECTION C[cite: 1]
+            ["25BC240", "Hriday kaul", "C", "C1", "CP1", "", ""], //[cite: 1]
+            ["25BC242", "Huzefa Shakeel", "C", "C1", "CP1", "", ""], //[cite: 1]
+            ["25BC250", "Ishaanvi Ramsisaria", "C", "C1", "CP1", "", ""], //[cite: 1]
+            ["25BC257", "Jai", "C", "C2", "CP2", "", ""], //[cite: 1]
+            ["25BC259", "Japesh Pal", "C", "C2", "CP2", "", ""], //[cite: 1]
+            ["25BC263", "Jatin Kumar", "C", "C2", "CP2", "SEC9", "VAC2"], //[cite: 1, 3]
+            ["25BC264", "Jatin Mankani", "C", "C2", "CP2", "SEC9", "VAC2"], //[cite: 1, 3]
+            ["25BC271", "Jonathan Ayush Dohling", "C", "C2", "CP2", "SEC23", "VAC2"], //[cite: 1, 3]
+            ["25BC297", "Kinjal Goyal", "C", "C2", "CP2", "", ""], //[cite: 1]
+            ["25BC304", "Koyyada Srija", "C", "C2", "CP2", "", ""], //[cite: 1]
+            ["25BC319", "Kush Madaan", "C", "C2", "CP2", "SEC9", "VAC2"], //[cite: 1, 3]
+            ["25BC335", "Madhav Gupta", "C", "C2", "CP2", "", ""], //[cite: 1]
+            ["25BC343", "Mang muan siam", "C", "C2", "CP2", "", ""], //[cite: 1]
+            ["25BC353", "Mehul", "C", "C2", "CP2", "", ""], //[cite: 1]
+            ["25BC370", "Nakul Saini", "C", "C2", "CP2", "SEC9", "VAC2"], //[cite: 1, 3]
+            ["25BC376", "Naunidh Singh", "C", "C2", "CP2", "SEC9", "VAC2"], //[cite: 1, 3]
+            ["25BC528", "Sara Hanfi", "C", "C3", "CP3", "", ""], //[cite: 1]
+            ["25BC533", "Satvik Dhar", "C", "C3", "CP3", "", ""], //[cite: 1]
+            ["25BC540", "Shaswat Ravi", "C", "C3", "CP3", "", ""], //[cite: 1]
+            ["25BC545", "Shilon", "C", "C3", "CP3", "SEC13", "VAC3"], //[cite: 1, 3]
+            ["25BC556", "Shrashti Gupta", "C", "C3", "CP3", "SEC22", "VAC3"], //[cite: 1, 3]
+            ["25BC560", "Shreya singh", "C", "C3", "CP3", "SEC22", "VAC3"], //[cite: 1, 3]
+            ["25BC562", "Shrishti", "C", "C3", "CP3", "SEC10", "VAC3"], //[cite: 1, 3]
+            ["25BC831", "Ishaan Singhal", "C", "C3", "CP3", "", ""], //[cite: 1]
+
+            // SECTION D[cite: 1]
+            ["25BC111", "Archit Kayal", "D", "D1", "DP1", "", ""], //[cite: 1]
+            ["25BC123", "Aryaveer Razdan", "D", "D1", "DP1", "SEC1", "VAC11"], //[cite: 1, 3]
+            ["25BC135", "Ayush Agarwal", "D", "D1", "DP1", "SEC2", "VAC11"], //[cite: 1, 3]
+            ["25BC151", "Bhumi Bilaiya", "D", "D2", "DP2", "", ""], //[cite: 1]
+            ["25BC167", "Deepanshu chaudhary", "D", "D2", "DP2", "SEC5", "VAC11"], //[cite: 1, 3]
+            ["25BC180", "Dhruv Makhija", "D", "D2", "DP2", "SEC2", "VAC11"], //[cite: 1, 3]
+            ["25BC197", "ER KIRAN CHENDHUR", "D", "D2", "DP2", "", ""], //[cite: 1]
+            ["25BC236", "Himanshu", "D", "D2", "DP2", "", ""], //[cite: 1]
+            ["25BC254", "Ishya Kaushal", "D", "D2", "DP2", "", ""], //[cite: 1]
+            ["25BC431", "Prathmesh", "D", "D2", "DP2", "", ""], //[cite: 1]
+            ["25BC575", "Sneha Priya", "D", "D2", "DP2", "", ""], //[cite: 1]
+            ["25BC577", "Sohail Ansari", "D", "D2", "DP2", "", ""], //[cite: 1]
+            ["25BC589", "Suhani kumari", "D", "D2", "DP2", "", ""], //[cite: 1]
+            ["25BC592", "Sukhwinder Singh", "D", "D2", "DP2", "", ""], //[cite: 1]
+            ["25BC605", "Tapesh Machya", "D", "D2", "DP2", "SEC23", "VAC3"], //[cite: 1, 3]
+            ["25BC607", "Tarush Gupta", "D", "D2", "DP2", "SEC3", "VAC3"], //[cite: 1, 3]
+            ["25BC728", "Aayushma Khaniya", "D", "D3", "DP3", "", ""], //[cite: 1]
+            ["25BC736", "Pratyush Agrawal", "D", "D3", "DP3", "", ""], //[cite: 1]
+            ["25BC764", "Divyansh", "D", "D3", "DP3", "", ""], //[cite: 1]
+            ["25BC784", "Radhika Sharma", "D", "D3", "DP3", "SEC4", "VAC5"], //[cite: 1, 3]
+            ["25BC793", "Trishna Abhay Waghmare", "D", "D3", "DP3", "SEC3", "VAC5"], //[cite: 1, 3]
+            ["25BC800", "Anshika Teotia", "D", "D3", "DP3", "SEC23", "VAC5"], //[cite: 1, 3]
+            ["25BC803", "Dhruv Sud", "D", "D3", "DP3", "SEC3", "VAC5"], //[cite: 1, 3]
+            ["25BC820", "Siddhid Varad Tripathi", "D", "D3", "DP3", "", ""], //[cite: 1]
+
+            // SECTION E[cite: 1]
+            ["25BC379", "Navya Garg", "E", "E1", "EP1", "", ""], //[cite: 1]
+            ["25BC386", "Nikhil Chhabra", "E", "E1", "EP1", "", ""], //[cite: 1]
+            ["25BC387", "Nikhil Giroh", "E", "E1", "EP1", "", ""], //[cite: 1]
+            ["25BC403", "Paavni Gupta", "E", "E2", "EP2", "SEC12", "VAC12"], //[cite: 1, 3]
+            ["25BC405", "Palak Snehi", "E", "E2", "EP2", "SEC17", "VAC12"], //[cite: 1, 3]
+            ["25BC408", "Pankaj Lodiya", "E", "E2", "EP2", "SEC20", "VAC12"], //[cite: 1, 3]
+            ["25BC413", "Payel Bhengra", "E", "E2", "EP2", "SEC17", "VAC12"], //[cite: 1, 3]
+            ["25BC414", "Pearl Bhagat", "E", "E2", "EP2", "SEC14", "VAC12"], //[cite: 1, 3]
+            ["25BC422", "Prachi", "E", "E2", "EP2", "SEC12", "VAC12"], //[cite: 1, 3]
+            ["25BC433", "Pratyaksh Kumar Bhatia", "E", "E2", "EP2", "", ""], //[cite: 1]
+            ["25BC436", "Prithviraj Marodia", "E", "E2", "EP2", "", ""], //[cite: 1]
+            ["25BC438", "Priya Rakshit", "E", "E2", "EP2", "", ""], //[cite: 1]
+            ["25BC439", "Priya Rana", "E", "E2", "EP2", "", ""], //[cite: 1]
+            ["25BC468", "Riddhima", "E", "E2", "EP2", "SEC15", "VAC13"], //[cite: 1, 3]
+            ["25BC479", "Rishika Yadav", "E", "E2", "EP2", "", ""], //[cite: 1]
+            ["25BC480", "Rishikesh Deka", "E", "E2", "EP2", "", ""], //[cite: 1]
+            ["25BC723", "Vansh Goel", "E", "E3", "EP3", "", ""], //[cite: 1]
+            ["25BC727", "Aayush Kumar Sah", "E", "E3", "EP3", "", ""], //[cite: 1]
+            ["25BC738", "Vatsal Agrawal", "E", "E3", "EP3", "SEC19", "VAC13"], //[cite: 1, 3]
+            ["25BC739", "Yukta Agrawal", "E", "E3", "EP3", "SEC13", "VAC14"], //[cite: 1, 3]
+            ["25BC747", "Umang Agrawal", "E", "E3", "EP3", "SEC13", "VAC14"], //[cite: 1, 3]
+            ["25BC751", "Shrishti Verma", "E", "E3", "EP3", "SEC18", "VAC14"], //[cite: 1, 3]
+            ["25BC763", "Devanshi Sharma", "E", "E3", "EP3", "", ""], //[cite: 1]
+            ["25BC819", "Siddharth Dobhal", "E", "E3", "EP3", "", ""], //[cite: 1]
+
+            // SECTION F[cite: 1]
+            ["25BC223", "Harsh Garg", "F", "F1", "FP1", "SEC8", "VAC19"], //[cite: 1, 3]
+            ["25BC230", "Harshita Yadav", "F", "F1", "FP1", "SEC5", "VAC19"], //[cite: 1, 3]
+            ["25BC241", "Hridyaan verma", "F", "F1", "FP1", "", ""], //[cite: 1]
+            ["25BC253", "Ishita Dhull", "F", "F2", "FP2", "", ""], //[cite: 1]
+            ["25BC261", "Jaspreet Kaur", "F", "F2", "FP2", "SEC12", "VAC19"], //[cite: 1, 3]
+            ["25BC279", "Kartik Pahilajani", "F", "F2", "FP2", "SEC9", "VAC19"], //[cite: 1, 3]
+            ["25BC280", "KARTIK SRIVASTAV", "F", "F2", "FP2", "SEC9", "VAC19"], //[cite: 1, 3]
+            ["25BC284", "Keshav Gupta", "F", "F2", "FP2", "", ""], //[cite: 1]
+            ["25BC289", "Khushant Sunaria", "F", "F2", "FP2", "", ""], //[cite: 1]
+            ["25BC291", "Khushi", "F", "F2", "FP2", "", ""], //[cite: 1]
+            ["25BC293", "Khushi Ralhan", "F", "F2", "FP2", "", ""], //[cite: 1]
+            ["25BC294", "Khushi Yadav", "F", "F2", "FP2", "", ""], //[cite: 1]
+            ["25BC307", "Krish kheria", "F", "F2", "FP2", "SEC9", "VAC20"], //[cite: 1, 3]
+            ["25BC348", "Mauli Rai", "F", "F2", "FP2", "", ""], //[cite: 1]
+            ["25BC350", "Megha", "F", "F2", "FP2", "", ""], //[cite: 1]
+            ["25BC382", "Neritya Bighot", "F", "F2", "FP2", "", ""], //[cite: 1]
+            ["25BC583", "Srishti Mittal", "F", "F3", "FP3", "", ""], //[cite: 1]
+            ["25BC597", "Swanman Koul", "F", "F3", "FP3", "SEC23", "VAC21"], //[cite: 1, 3]
+            ["25BC600", "Tanushree", "F", "F3", "FP3", "SEC13", "VAC21"], //[cite: 1, 3]
+            ["25BC618", "Upasana Mukoo", "F", "F3", "FP3", "", ""], //[cite: 1]
+            ["25BC653", "Vedika Rana", "F", "F3", "FP3", "SEC14", "VAC21"], //[cite: 1, 3]
+            ["25BC664", "Vrinda", "F", "F3", "FP3", "", ""], //[cite: 1]
+            ["25BC692", "Gautam Agrawal", "F", "F3", "FP3", "SEC19", "VAC21"], //[cite: 1, 3]
+            ["25BC693", "Girish Agrawal", "F", "F3", "FP3", "SEC19", "VAC21"], //[cite: 1, 3]
+
+            // SECTION G[cite: 1]
+            ["25BC175", "Devanshgyan Saxena", "G", "G1", "GP1", "SEC7", "VAC15"], //[cite: 1, 3]
+            ["25BC179", "Dhruv Hajang", "G", "G1", "GP1", "SEC1", "VAC15"], //[cite: 1, 3]
+            ["25BC183", "Dilpreet Kaur", "G", "G2", "GP2", "SEC14", "VAC15"], //[cite: 1, 3]
+            ["25BC198", "Eidu Zaifa", "G", "G2", "GP2", "", ""], //[cite: 1]
+            ["25BC215", "Gunjan Sahu", "G", "G2", "GP2", "SEC2", "VAC15"], //[cite: 1, 3]
+            ["25BC245", "Iman", "G", "G2", "GP2", "", ""], //[cite: 1]
+            ["25BC258", "Jaishree Kushwaha", "G", "G2", "GP2", "", ""], //[cite: 1]
+            ["25BC270", "Jiya arora", "G", "G2", "GP2", "SEC5", "VAC15"], //[cite: 1, 3]
+            ["25BC286", "Khanak Arora", "G", "G2", "GP2", "", ""], //[cite: 1]
+            ["25BC308", "Krish Raj", "G", "G2", "GP2", "SEC5", "VAC16"], //[cite: 1, 3]
+            ["25BC322", "Lakshay Danterwal", "G", "G2", "GP2", "SEC15", "VAC16"], //[cite: 1, 3]
+            ["25BC330", "Maahi Babani", "G", "G2", "GP2", "", ""], //[cite: 1]
+            ["25BC332", "Maahi Tyagi", "G", "G2", "GP2", "", ""], //[cite: 1]
+            ["25BC346", "Mannat Singhania", "G", "G2", "GP2", "", ""], //[cite: 1]
+            ["25BC453", "Raghav Garodia", "G", "G2", "GP2", "SEC20", "VAC16"], //[cite: 1, 3]
+            ["25BC458", "Rajdeep Kundu", "G", "G2", "GP2", "SEC20", "VAC16"], //[cite: 1, 3]
+            ["25BC785", "Ranvir Chaudhary", "G", "G3", "GP3", "SEC19", "VAC21"], //[cite: 1, 3]
+            ["25BC796", "Adarsh kumar prajapati", "G", "G3", "GP3", "SEC19", "VAC21"], //[cite: 1, 3]
+            ["25BC811", "Manya Ohri", "G", "G3", "GP3", "", ""], //[cite: 1]
+            ["25BC816", "Sachi singh", "G", "G3", "GP3", "", ""], //[cite: 1]
+            ["25BC823", "Umang Kumar", "G", "G3", "GP3", "", ""], //[cite: 1]
+            ["25BC824", "Shudhanshu singh", "G", "G3", "GP3", "", ""], //[cite: 1]
+
+            // SECTION H[cite: 1]
+            ["25BC384", "Niket Raj", "H", "H1", "HP1", "", ""], //[cite: 1]
+            ["25BC390", "Nikunj Taori", "H", "H1", "HP1", "", ""], //[cite: 1]
+            ["25BC462", "Rashi Goyal", "H", "H2", "HP2", "SEC17", "VAC24"], //[cite: 1, 3]
+            ["25BC490", "Rohit Kumar", "H", "H2", "HP2", "", ""], //[cite: 1]
+            ["25BC508", "Saksham Singh", "H", "H2", "HP2", "SEC10", "VAC24"], //[cite: 1, 3]
+            ["25BC516", "Samriddhi Gupta", "H", "H2", "HP2", "SEC20", "VAC29"], //[cite: 1, 3]
+            ["25BC527", "Sanyam Vashishtha", "H", "H2", "HP2", "", ""], //[cite: 1]
+            ["25BC531", "Sashank Deora", "H", "H2", "HP2", "", ""], //[cite: 1]
+            ["25BC532", "Satnam Singh", "H", "H2", "HP2", "", ""], //[cite: 1]
+            ["25BC538", "Shailaja Das", "H", "H2", "HP2", "", ""], //[cite: 1]
+            ["25BC541", "Shaurya Bhasin", "H", "H2", "HP2", "", ""], //[cite: 1]
+            ["25BC547", "Shivam Gupta", "H", "H2", "HP2", "SEC10", "VAC17"], //[cite: 1, 3]
+            ["25BC551", "Shivanshu", "H", "H2", "HP2", "SEC3", "VAC24"], //[cite: 1, 3]
+            ["25BC552", "Shivanshu Khemka", "H", "H2", "HP2", "SEC3", "VAC24"], //[cite: 1, 3]
+            ["25BC557", "Shreeya Sawhney", "H", "H2", "HP2", "SEC13", "VAC17"], //[cite: 1, 3]
+            ["25BC590", "Suhani Yadav", "H", "H2", "HP2", "", ""], //[cite: 1]
+            ["25BC743", "Raahat Shah", "H", "H3", "HP3", "SEC18", "VAC17"], //[cite: 1, 3]
+            ["25BC746", "Shreya Singh", "H", "H3", "HP3", "SEC19", "VAC17"], //[cite: 1, 3]
+            ["25BC762", "Lakshita mittal", "H", "H3", "HP3", "", ""], //[cite: 1]
+            ["25BC766", "Amulya Jindal", "H", "H3", "HP3", "", ""], //[cite: 1]
+            ["25BC769", "Lakshita Jain", "H", "H3", "HP3", "", ""], //[cite: 1]
+            ["25BC807", "Himanshu", "H", "H3", "HP3", "", ""], //[cite: 1]
+            ["25BC809", "Kirti", "H", "H3", "HP3", "", ""], //[cite: 1]
+
+            // SECTION I[cite: 1]
+            ["25BC337", "Maitreyi Balasubramanian", "I", "I1", "IP1", "", ""], //[cite: 1]
+            ["25BC378", "Navneet Singh", "I", "I1", "IP1", "", ""], //[cite: 1]
+            ["25BC380", "Navya Jain", "I", "I1", "IP1", "", ""], //[cite: 1]
+            ["25BC443", "Priyanshu Verma", "I", "I1", "IP1", "", ""], //[cite: 1]
+            ["25BC729", "Divyansh Maru", "I", "I1", "IP1", "", ""], //[cite: 1]
+            ["25BC758", "Salvia Verma", "I", "I1", "IP1", "SEC13", "VAC24"], //[cite: 1, 3]
+            ["25BC283", "Kashvi Bhansali", "I", "I2", "IP2", "", ""], //[cite: 1]
+            ["25BC295", "Khyati", "I", "I2", "IP2", "", ""], //[cite: 1]
+            ["25BC299", "Kirti Chauhan", "I", "I2", "IP2", "", ""], //[cite: 1]
+            ["25BC300", "Kishan Kumar Sharma", "I", "I2", "IP2", "", ""], //[cite: 1]
+            ["25BC328", "M.C. Suan Cin Khup", "I", "I2", "IP2", "SEC4", "VAC27"], //[cite: 1, 3]
+            ["25BC446", "Pushkar Tiwari", "I", "I2", "IP2", "", ""], //[cite: 1]
+            ["25BC491", "Roshan Moolchandani", "I", "I2", "IP2", "", ""], //[cite: 1]
+            ["25BC667", "Yash Singla", "I", "I2", "IP2", "", ""], //[cite: 1]
+            ["25BC825", "Sanya Tatia Jain", "I", "I2", "IP2", "", ""], //[cite: 1]
+            ["25BC310", "Krishna Chandra Dharua", "I", "I3", "IP3", "SEC4", "VAC7"], //[cite: 1, 3]
+            ["25BC338", "Manan Jain", "I", "I3", "IP3", "", ""], //[cite: 1]
+            ["25BC388", "Nikhil Singh Saini", "I", "I3", "IP3", "", ""], //[cite: 1]
+            ["25BC442", "PRIYANSHU AGRAWAL", "I", "I3", "IP3", "", ""], //[cite: 1]
+            ["25BC456", "Raj Asles", "I", "I3", "IP3", "SEC9", "VAC28"], //[cite: 1, 3]
+            ["25BC485", "Ritwik Jaiswal", "I", "I3", "IP3", "", ""], //[cite: 1]
+            ["25BC679", "ZAID", "I", "I3", "IP3", "", ""], //[cite: 1]
+            ["25BC711", "Tanush Garg", "I", "I3", "IP3", "", ""], //[cite: 1]
+            ["25BC798", "Alok Singh Naruka", "I", "I3", "IP3", "SEC10", "VAC21"], //[cite: 1, 3]
+
+            // SECTION J[cite: 1]
+            ["25BC347", "Manu Dev", "J", "J1", "JP1", "", ""], //[cite: 1]
+            ["25BC365", "Mrinalika Bhargav", "J", "J1", "JP1", "SEC23", "VAC20"], //[cite: 1, 3]
+            ["25BC366", "Mrityunjay Sahoo", "J", "J1", "JP1", "SEC12", "VAC25"], //[cite: 1, 3]
+            ["25BC373", "Namita", "J", "J2", "JP2", "SEC23", "VAC2"], //[cite: 1, 3]
+            ["25BC397", "Niyati", "J", "J2", "JP2", "", ""], //[cite: 1]
+            ["25BC398", "Novesh Sharma", "J", "J2", "JP2", "", ""], //[cite: 1]
+            ["25BC402", "Paarth Sharma", "J", "J2", "JP2", "", ""], //[cite: 1]
+            ["25BC455", "Raghav Saraf", "J", "J2", "JP2", "SEC20", "VAC2"], //[cite: 1, 3]
+            ["25BC473", "Riewsanbhalang Kharsati Lamar", "J", "J2", "JP2", "SEC23", "VAC13"], //[cite: 1, 3]
+            ["25BC491", "Roshan Moolchandani", "J", "J2", "JP2", "", ""], //[cite: 1]
+            ["25BC523", "Sanskar Garg", "J", "J2", "JP2", "", ""], //[cite: 1]
+            ["25BC529", "Saransh Kumar Gupta", "J", "J2", "JP2", "", ""], //[cite: 1]
+            ["25BC535", "Satyam kumar", "J", "J2", "JP2", "", ""], //[cite: 1]
+            ["25BC544", "Shaurya Singh", "J", "J2", "JP2", "", ""], //[cite: 1]
+            ["25BC565", "Shubh Gupta", "J", "J2", "JP2", "SEC10", "VAC24"], //[cite: 1, 3]
+            ["25BC579", "Somil Agrawal", "J", "J2", "JP2", "", ""], //[cite: 1]
+            ["25BC702", "Bishal Dev", "J", "J3", "JP3", "SEC22", "VAC21"], //[cite: 1, 3]
+            ["25BC756", "Stanzin Chosphel", "J", "J3", "JP3", "SEC16", "VAC24"], //[cite: 1, 3]
+            ["25BC757", "Yash Kumar Manjhi", "J", "J3", "JP3", "SEC10", "VAC21"], //[cite: 1, 3]
+            ["25BC770", "Vidushi Arora", "J", "J3", "JP3", "", ""], //[cite: 1]
+            ["25BC805", "Harsh Malviya", "J", "J3", "JP3", "SEC16", "VAC9"], //[cite: 1, 3]
+            ["25BC822", "Thaneshwar Bhattrai", "J", "J3", "JP3", "", ""], //[cite: 1]
+            ["25BC829", "Aalya Singh", "J", "J3", "JP3", "", ""], //[cite: 1]
+            ["25BC832", "Akshit Yadav", "J", "J3", "JP3", "SEC16", ""], //[cite: 1, 3]
+
+            // SECTION K[cite: 1]
+            ["25BC466", "Riddhi Agarwal", "K", "K1", "KP1", "SEC13", "VAC16"], //[cite: 1, 3]
+            ["25BC486", "Riya Choudhary", "K", "K1", "KP1", "", ""], //[cite: 1]
+            ["25BC487", "Riya Kumari", "K", "K1", "KP1", "", ""], //[cite: 1]
+            ["25BC510", "Sakshi Deepak Surve", "K", "K2", "KP2", "SEC22", "VAC25"], //[cite: 1, 3]
+            ["25BC511", "Saleheen Ara", "K", "K2", "KP2", "SEC10", "VAC25"], //[cite: 1, 3]
+            ["25BC520", "Sandli Bhatnagar", "K", "K2", "KP2", "SEC20", "VAC8"], //[cite: 1, 3]
+            ["25BC524", "SANSKAR JAIN", "K", "K2", "KP2", "", ""], //[cite: 1]
+            ["25BC566", "Shubh narnoli", "K", "K2", "KP2", "SEC6", "VAC17"], //[cite: 1, 3]
+            ["25BC573", "Skanda Rawte", "K", "K2", "KP2", "", ""], //[cite: 1]
+            ["25BC596", "SUVANI BHAT", "K", "K2", "KP2", "SEC10", "VAC9"], //[cite: 1, 3]
+            ["25BC599", "Tanishq", "K", "K2", "KP2", "SEC6", "VAC9"], //[cite: 1, 3]
+            ["25BC627", "Vaibhav Shukla", "K", "K2", "KP2", "", ""], //[cite: 1]
+            ["25BC632", "Vaishnavi Sandip Adepwar", "K", "K2", "KP2", "", ""], //[cite: 1]
+            ["25BC663", "Vrasty", "K", "K2", "KP2", "", ""], //[cite: 1]
+            ["25BC666", "Yash Aggarwal", "K", "K2", "KP2", "", ""], //[cite: 1]
+            ["25BC680", "Harshita godara", "K", "K2", "KP2", "", ""], //[cite: 1]
+
+            // SECTION L[cite: 1]
+            ["25BC282", "Kartikeya Kumar", "L", "L1", "LP1", "", ""], //[cite: 1]
+            ["25BC311", "Krishna Singh Chouhan", "L", "L1", "LP1", "SEC6", "VAC2"], //[cite: 1, 3]
+            ["25BC349", "Mayank Patel", "L", "L1", "LP1", "", ""], //[cite: 1]
+            ["25BC359", "Mohd Adnan Ansari", "L", "L1", "LP1", "SEC4", "VAC7"], //[cite: 1, 3]
+            ["25BC391", "Nilesh Yadav", "L", "L1", "LP1", "", ""], //[cite: 1]
+            ["25BC445", "Puneet kumar", "L", "L1", "LP1", "", ""], //[cite: 1]
+            ["25BC450", "Rachel", "L", "L1", "LP1", "", ""], //[cite: 1]
+            ["25BC789", "Siddharth Rawat", "L", "L1", "LP1", "SEC13", "VAC5"], //[cite: 1, 3]
+            ["25BC795", "Yashasvi Singh", "L", "L1", "LP1", "SEC19", "VAC9"], //[cite: 1, 3]
+            ["25BC806", "Harshita Sharma", "L", "L1", "LP1", "", ""], //[cite: 1]
+            ["25BC815", "Reyansh Singh Kotwal", "L", "L1", "LP1", "", ""], //[cite: 1]
+            ["25BC369", "Muskan", "L", "L2", "LP2", "SEC9", "VAC16"], //[cite: 1, 3]
+            ["25BC381", "Neil Sharma", "L", "L2", "LP2", "", ""], //[cite: 1]
+            ["25BC415", "Pearl Dambi", "L", "L2", "LP2", "SEC20", "VAC20"], //[cite: 1, 3]
+            ["25BC425", "Pragya Yadav", "L", "L2", "LP2", "", ""], //[cite: 1]
+            ["25BC507", "Saksham Sharma", "L", "L2", "LP2", "SEC13", "VAC13"], //[cite: 1, 3]
+            ["25BC555", "Shourav kumar", "L", "L2", "LP2", "SEC13", "VAC13"], //[cite: 1, 3]
+            ["25BC787", "Sampann Bansal", "L", "L2", "LP2", "SEC3", "VAC14"], //[cite: 1, 3]
+            ["25BC791", "Swaastik Misra", "L", "L2", "LP2", "SEC4", "VAC21"], //[cite: 1, 3]
+            ["25BC792", "Tarush Garg", "L", "L2", "LP2", "SEC3", "VAC14"], //[cite: 1, 3]
+            ["25BC794", "Vihaan Lamba", "L", "L2", "LP2", "SEC3", "VAC14"], //[cite: 1, 3]
+            ["25BC808", "Kartik", "L", "L2", "LP2", "", ""], //[cite: 1]
+            ["25BC303", "Koushika Bhat", "L", "L3", "LP3", "", ""], //[cite: 1]
+            ["25BC418", "Piyush Kumawat", "L", "L3", "LP3", "SEC15", "VAC27"], //[cite: 1, 3]
+            ["25BC515", "Samradnya Mahesh kowe", "L", "L3", "LP3", "SEC4", "VAC20"], //[cite: 1, 3]
+            ["25BC810", "Love Pratap Raghav", "L", "L3", "LP3", "", ""], //[cite: 1]
+            ["25BC833", "Prabal Gurung", "L", "L3", "LP3", "SEC20", "VAC17"], //[cite: 1, 3]
+
+            // SECTION M[cite: 1]
+            ["25BC145", "Bhavya Kabra", "M", "M1", "MP1", "", ""], //[cite: 1]
+            ["25BC159", "Chhavi", "M", "M1", "MP1", "", ""], //[cite: 1]
+            ["25BC174", "Devansh Prasad", "M", "M1", "MP1", "SEC5", "VAC28"], //[cite: 1, 3]
+            ["25BC177", "Devna Razdan", "M", "M1", "MP1", "SEC7", "VAC7"], //[cite: 1, 3]
+            ["25BC181", "Dhruv Tandon", "M", "M1", "MP1", "SEC5", "VAC28"], //[cite: 1, 3]
+            ["25BC217", "GURU VIDHUN DM", "M", "M1", "MP1", "SEC7", "VAC28"], //[cite: 1, 3]
+            ["25BC251", "Ishan Prakash Nagpal", "M", "M1", "MP1", "", ""], //[cite: 1]
+            ["25BC327", "Lavanya Singh", "M", "M1", "MP1", "SEC9", "VAC7"], //[cite: 1, 3]
+            ["25BC372", "Namandeep Singh", "M", "M1", "MP1", "SEC2", "VAC2"], //[cite: 1, 3]
+            ["25BC410", "Parth Goel", "M", "M1", "MP1", "SEC17", "VAC8"], //[cite: 1, 3]
+            ["25BC760", "Drish Goel", "M", "M1", "MP1", "", ""], //[cite: 1]
+            ["25BC231", "Hawa Intikhab", "M", "M2", "MP2", "SEC5", "VAC19"], //[cite: 1, 3]
+            ["25BC305", "Kratika Soni", "M", "M2", "MP2", "", ""], //[cite: 1]
+            ["25BC685", "Himani Poddar", "M", "M2", "MP2", "", ""], //[cite: 1]
+            ["25BC753", "Akshat Singh", "M", "M2", "MP2", "SEC10", "VAC5"], //[cite: 1, 3]
+            ["25BC818", "Shakshi Kumari", "M", "M2", "MP2", "", ""], //[cite: 1]
+            ["25BC224", "Harsh Kumar", "M", "M3", "MP3", "SEC2", "VAC11"], //[cite: 1, 3]
+            ["25BC277", "Karan Veer Singh", "M", "M3", "MP3", "SEC2", "VAC7"], //[cite: 1, 3]
+            ["25BC285", "Keshav Mittal", "M", "M3", "MP3", "", ""], //[cite: 1]
+            ["25BC301", "Komal", "M", "M3", "MP3", "", ""], //[cite: 1]
+            ["25BC691", "Diksha Sharma", "M", "M3", "MP3", "SEC17", "VAC5"], //[cite: 1, 3]
+            ["25BC719", "Ritesh Kumar Yadav", "M", "M3", "MP3", "", ""], //[cite: 1]
+
+            // SECTION N[cite: 1]
+            ["25BC199", "Eshita Singh", "N", "N1", "NP1", "", ""], //[cite: 1]
+            ["25BC200", "Faisal Hammad", "N", "N1", "NP1", "", ""], //[cite: 1]
+            ["25BC326", "Lakshya Malaiya", "N", "N1", "NP1", "SEC12", "VAC2"], //[cite: 1, 3]
+            ["25BC344", "Manik Garg", "N", "N1", "NP1", "", ""], //[cite: 1]
+            ["25BC396", "Nitisha Vijay Chauware", "N", "N1", "NP1", "", ""], //[cite: 1]
+            ["25BC417", "Piyush Kumar", "N", "N1", "NP1", "SEC15", "VAC8"], //[cite: 1, 3]
+            ["25BC459", "Rajput Krish Pratapsing", "N", "N1", "NP1", "SEC13", "VAC3"], //[cite: 1, 3]
+            ["25BC213", "Ghanashyam T Raj", "N", "N2", "NP2", "SEC8", "VAC25"], //[cite: 1, 3]
+            ["25BC278", "Karthic U", "N", "N2", "NP2", "SEC0", "VAC16"], //[cite: 1, 3]
+            ["25BC281", "KARTIKEY TIWARI", "N", "N2", "NP2", "SEC20", "VAC29"], //[cite: 1, 3]
+            ["25BC454", "Raghav Rajyavardhan", "N", "N2", "NP2", "SEC13", "VAC24"], //[cite: 1, 3]
+            ["25BC744", "Sharad Kabariya", "N", "N2", "NP2", "SEC22", "VAC27"], //[cite: 1, 3]
+            ["25BC316", "Kumari Mitali", "N", "N3", "NP3", "SEC22", "VAC16"], //[cite: 1, 3]
+            ["25BC333", "Maanit Lamba", "N", "N3", "NP3", "", ""], //[cite: 1]
+            ["25BC334", "Maanya Gautam", "N", "N3", "NP3", "", ""], //[cite: 1]
+            ["25BC426", "Prajual Agrawal", "N", "N3", "NP3", "", ""], //[cite: 1]
+            ["25BC463", "Ravi Choudhary", "N", "N3", "NP3", "SEC17", "VAC28"], //[cite: 1, 3]
+            ["25BC802", "Dhruv Sharma", "N", "N3", "NP3", "SEC10", "VAC14"], //[cite: 1, 3]
+            ["25BC804", "Gurpinder Singh", "N", "N3", "NP3", "SEC10", "VAC14"], //[cite: 1, 3]
+            ["25BC812", "Mukul singh", "N", "N3", "NP3", "", ""], //[cite: 1]
+            ["25BC826", "Kushan Dalal", "N", "N3", "NP3", "", ""], //[cite: 1]
+            ["25BC827", "Shaurya singh", "N", "N3", "NP3", "", ""] //[cite: 1]
+        ];
+
+        const studentDirectory = {};
+        rawStudents.forEach(s => {
+            // Mapping extracted details into queryable objects
+            studentDirectory[s[0].toUpperCase()] = {
+                name: s[1],
+                section: s[2],
+                tutGroup: s[3],
+                pracGroup: s[4],
+                sec: s[5] || "TBD",
+                vac: s[6] || "TBD"
+            };
+        });
 
         // --- THE MASTER TIMETABLE DATABASE ---
-        // Maps Section (A-N), Type (Core, Lab, Tut, SEC, VAC) and Sub-Groups
+        // Maps Section (A-N), Type (Core, Lab, Tut, SEC, VAC) and Sub-Groups dynamically
         const masterTimetable = [
-            // Section A - Core Classes
+            // Section A - Core & Tut Classes[cite: 4]
             { id: 'm1', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Business Research Methods', type: 'Core', room: 'R35', section: 'A', group: 'ALL' },
             { id: 'm2', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Core', room: 'R10', section: 'A', group: 'ALL' },
             { id: 'm3', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R3', section: 'A', group: 'ALL' },
-            // Section A - Labs
+            { id: 'm_a_tut1', day: 3, time: '12:30 PM - 01:30 PM', subject: 'Principles of Marketing', type: 'Tut', room: 'T35', section: 'A', group: 'A3' },
+            { id: 'm_a_tut2', day: 3, time: '02:00 PM - 03:00 PM', subject: 'Business Research Methods', type: 'Tut', room: 'T48', section: 'A', group: 'A1' },
+            { id: 'm_a_tut3', day: 4, time: '12:30 PM - 01:30 PM', subject: 'Business Research Methods', type: 'Tut', room: 'T27', section: 'A', group: 'A2' },
+            
+            // Section A - Practical Labs[cite: 4]
             { id: 'm4', day: 2, time: '08:30 AM - 09:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP1' },
             { id: 'm5', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP3' },
             { id: 'm6', day: 2, time: '10:30 AM - 11:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP2' },
-            // Section N - Core Classes
+            
+            // Section C - Core Classes[cite: 4]
+            { id: 'm_c_core1', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R15', section: 'C', group: 'ALL' },
+            { id: 'm_c_core2', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Financial Management', type: 'Core', room: 'R13', section: 'C', group: 'ALL' },
+            { id: 'm_c_core3', day: 2, time: '08:30 AM - 09:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R13', section: 'C', group: 'ALL' },
+            
+            // Section C - Practical Labs[cite: 4]
+            { id: 'm_c_lab1', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'T33', section: 'C', group: 'CP3' },
+            { id: 'm_c_lab2', day: 2, time: '10:30 AM - 11:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'CL2', section: 'C', group: 'CP1' },
+
+            // Section N - Core Classes[cite: 4]
             { id: 'm7', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R2', section: 'N', group: 'ALL' },
             { id: 'm8', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'PB3', section: 'N', group: 'ALL' },
-            // Section N - Labs
-            { id: 'm9', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'Library FF', section: 'N', group: 'NP1' },
+            
+            // Section N - Practical Labs[cite: 4]
+            { id: 'm9', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'Library FF', section: 'N', group: 'NP1' },
             { id: 'm10', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'T48', section: 'N', group: 'NP3' },
-            // SEC & VAC Central Timings (Matched to course codes)
-            { id: 's1', day: 4, time: '08:30 AM - 09:30 AM', subject: 'Digital Marketing (SEC2)', type: 'SEC', room: 'R15', section: 'ALL', courseCode: 'SEC2' },
-            { id: 's2', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Digital Empowerment (VAC6)', type: 'VAC', room: 'R17', section: 'ALL', courseCode: 'VAC6' },
-            { id: 's3', day: 2, time: '03:00 PM - 04:00 PM', subject: 'Innovation & Entrepreneurship (SEC20)', type: 'SEC', room: 'R14', section: 'ALL', courseCode: 'SEC20' },
-            { id: 's4', day: 3, time: '12:30 PM - 01:30 PM', subject: 'The Gita (VAC29)', type: 'VAC', room: 'CL1', section: 'ALL', courseCode: 'VAC29' },
-            { id: 's5', day: 2, time: '02:00 PM - 03:00 PM', subject: 'Basic IT Tools (SEC8)', type: 'SEC', room: 'R5', section: 'ALL', courseCode: 'SEC8' }
+            
+            // MASTER SEC & VAC Central Timings (Matched dynamically to course codes)[cite: 2]
+            { id: 's1', day: 4, time: '08:30 AM - 09:30 AM', subject: 'Digital Marketing', type: 'SEC', room: 'R15', section: 'ALL', courseCode: 'SEC2' },
+            { id: 's2', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Digital Empowerment', type: 'VAC', room: 'R17', section: 'ALL', courseCode: 'VAC6' },
+            { id: 's3', day: 2, time: '03:00 PM - 04:00 PM', subject: 'Innovation & Entrepreneurship', type: 'SEC', room: 'R14', section: 'ALL', courseCode: 'SEC20' },
+            { id: 's4', day: 3, time: '12:30 PM - 01:30 PM', subject: 'The Gita', type: 'VAC', room: 'CL1', section: 'ALL', courseCode: 'VAC29' },
+            { id: 's5', day: 2, time: '02:00 PM - 03:00 PM', subject: 'Basic IT Tools', type: 'SEC', room: 'R5', section: 'ALL', courseCode: 'SEC8' },
+            { id: 's6', day: 4, time: '08:30 AM - 09:30 AM', subject: 'Sustainable Eco Tourism', type: 'SEC', room: 'R2', section: 'ALL', courseCode: 'SEC1' },
+            { id: 's7', day: 1, time: '11:30 AM - 12:30 PM', subject: 'The Art of Being Happy', type: 'VAC', room: 'R3', section: 'ALL', courseCode: 'VAC15' },
+            { id: 's8', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Ethics and Culture', type: 'VAC', room: 'R19', section: 'ALL', courseCode: 'VAC11' },
+            { id: 's9', day: 1, time: '03:00 PM - 04:00 PM', subject: 'Social and Emotional Learning', type: 'VAC', room: 'PB3', section: 'ALL', courseCode: 'VAC19' }
         ];
 
         let currentAuthMode = 'signin'; 
