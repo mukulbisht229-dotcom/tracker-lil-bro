@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trackr | College Timetable & Attendance</title>
+    <title>SRCC Trackr | Attendance & Timetable</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -20,6 +20,11 @@
     </script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
     <style>
         .btn-transition { transition: all 0.2s ease-in-out; }
         .hide { display: none !important; }
@@ -49,24 +54,32 @@
             <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <i class="ph ph-graduation-cap text-3xl text-blue-600 dark:text-blue-400"></i>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight mb-2">Welcome to Trackr.</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Enter your details to set up your personal SRCC attendance tracker.</p>
+            <h1 class="text-2xl font-bold tracking-tight mb-2">Welcome to SRCC Trackr.</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Sign in or register to sync your attendance across any device.</p>
             
             <div class="space-y-4 text-left">
                 <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Email Address</label>
+                    <input type="email" id="user-email-input" placeholder="e.g. mukul@srcc.edu" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" autocomplete="off" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Password</label>
+                    <input type="password" id="user-pass-input" placeholder="••••••••" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" required>
+                </div>
+                <div>
                     <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">First Name</label>
-                    <input type="text" id="user-name-input" placeholder="e.g. Mukul" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" autocomplete="off" required>
+                    <input type="text" id="user-name-input" placeholder="e.g. Mukul" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" autocomplete="off">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Roll Number</label>
-                    <input type="text" id="user-roll-input" placeholder="e.g. 23BC229" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" autocomplete="off" required>
+                    <input type="text" id="user-roll-input" placeholder="e.g. 23BC229" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all dark:text-white" autocomplete="off">
                 </div>
                 
                 <button id="get-started-btn" class="w-full mt-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm btn-transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                    <span id="login-text">Get Started</span>
+                    <span id="login-text">Sign In / Register</span>
                     <i class="ph ph-arrow-right font-bold"></i>
                 </button>
-                <p id="login-error" class="text-red-500 text-xs text-center font-medium hide mt-2">Please fill in both fields to continue.</p>
+                <p id="login-error" class="text-red-500 text-xs text-center font-medium hide mt-2"></p>
             </div>
         </div>
     </div>
@@ -77,7 +90,7 @@
         <!-- Header -->
         <header class="p-6 pb-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <div>
-                <h1 id="greeting-text" class="text-2xl font-bold tracking-tight">Trackr.</h1>
+                <h1 id="greeting-text" class="text-2xl font-bold tracking-tight">SRCC Trackr.</h1>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" id="current-date-display">Today</p>
             </div>
             <div class="flex items-center gap-3">
@@ -107,7 +120,6 @@
             
             <!-- VIEW: Today's Classes -->
             <section id="today-view" class="view-section">
-                <!-- Back-Dating Date Picker Bar -->
                 <div class="mb-5 flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3.5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
                     <div class="flex items-center gap-2">
                         <i class="ph ph-calendar-blank text-blue-600 dark:text-blue-400 text-lg"></i>
@@ -238,9 +250,26 @@
     </div>
 
     <script>
+        // YOUR FIREBASE CONFIGURATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW874MGlmPjbwfOm1qAsswtj4UizfvPAk",
+            authDomain: "college-tracker-cb97d.firebaseapp.com",
+            projectId: "college-tracker-cb97d",
+            storageBucket: "college-tracker-cb97d.firebasestorage.app",
+            messagingSenderId: "289913680038",
+            appId: "1:289913680038:web:4d06037670576304fb4467",
+            measurementId: "G-29CE7BEGF7"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
         const loginScreen = document.getElementById('login-screen');
         const appWrapper = document.getElementById('app-wrapper');
         const getStartedBtn = document.getElementById('get-started-btn');
+        const emailInput = document.getElementById('user-email-input');
+        const passInput = document.getElementById('user-pass-input');
         const nameInput = document.getElementById('user-name-input');
         const rollInput = document.getElementById('user-roll-input');
         const loginError = document.getElementById('login-error');
@@ -248,67 +277,117 @@
         const greetingText = document.getElementById('greeting-text');
 
         const SEMESTER_START_DATE = '2026-07-28';
+        let currentUserUid = null;
 
-        function checkAuth() {
-            const isLoggedIn = localStorage.getItem('trackr_logged_in');
-            const savedName = localStorage.getItem('trackr_user_name');
-            
-            if (isLoggedIn === 'true' && savedName) {
-                greetingText.innerText = `Hello, ${savedName} 👋`;
-                loginScreen.classList.add('hide');
-                appWrapper.classList.remove('hide');
-                initApp(); 
+        // Listen to Firebase Auth state
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                await loadUserDataFromCloud();
             } else {
                 loginScreen.classList.remove('hide');
                 appWrapper.classList.add('hide');
             }
-        }
+        });
 
-        getStartedBtn.addEventListener('click', () => {
+        getStartedBtn.addEventListener('click', async () => {
+            const email = emailInput.value.trim();
+            const pass = passInput.value.trim();
             const nameVal = nameInput.value.trim();
             const rollVal = rollInput.value.trim();
 
-            if (!nameVal || !rollVal) {
+            if (!email || !pass) {
+                loginError.innerText = "Please enter email and password.";
                 loginError.classList.remove('hide');
                 return;
             }
             loginError.classList.add('hide');
 
             const loginText = document.getElementById('login-text');
-            loginText.innerText = "Setting up...";
-            getStartedBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            loginText.innerText = "Connecting...";
             
-            setTimeout(() => {
-                localStorage.setItem('trackr_logged_in', 'true');
-                localStorage.setItem('trackr_user_name', nameVal);
-                localStorage.setItem('trackr_roll_number', rollVal);
+            try {
+                let userCredential;
+                try {
+                    userCredential = await auth.signInWithEmailAndPassword(email, pass);
+                } catch (err) {
+                    if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                        if (!nameVal || !rollVal) {
+                            loginError.innerText = "New account? Please enter Name & Roll Number.";
+                            loginError.classList.remove('hide');
+                            loginText.innerText = "Sign In / Register";
+                            return;
+                        }
+                        userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+                        await db.collection('users').doc(userCredential.user.uid).set({
+                            name: nameVal,
+                            roll: rollVal,
+                            records: {},
+                            customClasses: {}
+                        });
+                    } else {
+                        throw err;
+                    }
+                }
                 
-                greetingText.innerText = `Hello, ${nameVal} 👋`;
-                loginScreen.classList.add('fade-out');
-                
-                setTimeout(() => {
-                    loginScreen.classList.add('hide');
-                    loginScreen.classList.remove('fade-out');
-                    appWrapper.classList.remove('hide');
-                    
-                    loginText.innerText = "Get Started";
-                    getStartedBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-                    
-                    initApp();
-                }, 500); 
-            }, 800); 
+                currentUserUid = userCredential.user.uid;
+                await loadUserDataFromCloud();
+            } catch (error) {
+                loginError.innerText = error.message;
+                loginError.classList.remove('hide');
+                loginText.innerText = "Sign In / Register";
+            }
         });
 
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('trackr_logged_in');
+        logoutBtn.addEventListener('click', async () => {
+            await auth.signOut();
+            localStorage.clear();
             appWrapper.classList.add('hide');
             loginScreen.classList.remove('hide');
-            
-            const savedName = localStorage.getItem('trackr_user_name');
-            const savedRoll = localStorage.getItem('trackr_roll_number');
-            if(savedName) nameInput.value = savedName;
-            if(savedRoll) rollInput.value = savedRoll;
         });
+
+        async function loadUserDataFromCloud() {
+            const docRef = db.collection('users').doc(currentUserUid);
+            const docSnap = await docRef.get();
+
+            let userData = {};
+            if (docSnap.exists) {
+                userData = docSnap.data();
+            } else {
+                userData = {
+                    name: nameInput.value.trim() || 'Student',
+                    roll: rollInput.value.trim() || '23BC229',
+                    records: {},
+                    customClasses: {}
+                };
+                await docRef.set(userData);
+            }
+
+            localStorage.setItem('trackr_user_name', userData.name);
+            localStorage.setItem('trackr_roll_number', userData.roll);
+            localStorage.setItem('trackr_data', JSON.stringify(userData.records || {}));
+            localStorage.setItem('trackr_custom_classes', JSON.stringify(userData.customClasses || {}));
+
+            greetingText.innerText = `Hello, ${userData.name} 👋`;
+            loginScreen.classList.add('fade-out');
+            setTimeout(() => {
+                loginScreen.classList.add('hide');
+                loginScreen.classList.remove('fade-out');
+                appWrapper.classList.remove('hide');
+                initApp();
+            }, 500);
+        }
+
+        async function saveUserDataToCloud() {
+            if (!currentUserUid) return;
+            const records = JSON.parse(localStorage.getItem('trackr_data')) || {};
+            const custom = JSON.parse(localStorage.getItem('trackr_custom_classes')) || {};
+            
+            await db.collection('users').doc(currentUserUid).update({
+                records: records,
+                customClasses: custom
+            });
+        }
 
         const timetable = {
             1: [
@@ -356,7 +435,6 @@
             return `${year}-${month}-${day}`;
         }
 
-        // Initialize to semester start date (28th July 2026)
         let activeDateObj = new Date(2026, 6, 28);
         let activeDateString = SEMESTER_START_DATE; 
         let activeDayIndex = activeDateObj.getDay();
@@ -409,7 +487,6 @@
             });
         }
 
-        // DATE PICKER RESTRICTED FROM SEMESTER START DATE (2026-07-28)
         function setupDatePicker() {
             const datePicker = document.getElementById('attendance-date-picker');
             if (datePicker) {
@@ -450,7 +527,7 @@
         };
 
         window.exportCalendar = function() {
-            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Trackr SRCC//Timetable//EN\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\n";
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//SRCC Trackr//Timetable//EN\nCALSCALE:GREGORIAN\nMETHOD:PUBLISH\n";
             
             function parseTime12to24(timeStr) {
                 let [time, modifier] = timeStr.trim().split(' ');
@@ -461,7 +538,7 @@
             }
 
             function getDateForDayOfWeek(dayNum) {
-                const now = new Date(2026, 6, 28); // Semester start reference week
+                const now = new Date(2026, 6, 28);
                 const currentDay = now.getDay();
                 const distanceToMonday = (currentDay === 0 ? -6 : 1) - currentDay;
                 
@@ -521,7 +598,7 @@
         };
         window.closeMonthlyModal = () => document.getElementById('monthly-modal').classList.add('hide');
         
-        window.saveExtraClass = () => {
+        window.saveExtraClass = async () => {
             if (activeDateString < SEMESTER_START_DATE) return;
             const subject = document.getElementById('extra-subject').value.trim();
             const time = document.getElementById('extra-time').value.trim() || 'Extra Class';
@@ -536,6 +613,7 @@
                 room: 'TBD'
             });
             localStorage.setItem('trackr_custom_classes', JSON.stringify(customClasses));
+            await saveUserDataToCloud();
             
             document.getElementById('extra-subject').value = '';
             document.getElementById('extra-time').value = '';
@@ -543,11 +621,12 @@
             renderTodayClasses();
         };
 
-        window.markAttendance = function(classId, subject, status) {
+        window.markAttendance = async function(classId, subject, status) {
             if (activeDateString < SEMESTER_START_DATE) return;
             const recordKey = `${activeDateString}_${classId}`;
             attendanceRecords[recordKey] = { subject, status };
             localStorage.setItem('trackr_data', JSON.stringify(attendanceRecords));
+            await saveUserDataToCloud();
             renderTodayClasses();
             updateStats();
         }
@@ -555,10 +634,10 @@
         window.shareStats = function() {
             const pct = document.getElementById('overall-percentage').innerText;
             const streak = document.getElementById('streak-counter').innerText;
-            const text = `🔥 ${streak}-Day Streak on Trackr!\n📊 Overall Attendance: ${pct}\nCan you beat my consistency?`;
+            const text = `🔥 ${streak}-Day Streak on SRCC Trackr!\n📊 Overall Attendance: ${pct}\nCan you beat my consistency?`;
             
             if (navigator.share) {
-                navigator.share({ title: 'My Trackr Stats', text: text }).catch(console.error);
+                navigator.share({ title: 'My SRCC Trackr Stats', text: text }).catch(console.error);
             } else {
                 navigator.clipboard.writeText(text);
                 alert("Stats copied to clipboard! Paste it in WhatsApp.");
@@ -735,7 +814,6 @@
             const container = document.getElementById('today-classes-container');
             container.innerHTML = '';
             
-            // Check if date is before semester kickoff
             if (activeDateString < SEMESTER_START_DATE) {
                 container.innerHTML = `
                     <div class="text-center py-12 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
@@ -974,7 +1052,14 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', checkAuth);
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    loginScreen.classList.remove('hide');
+                    appWrapper.classList.add('hide');
+                }
+            });
+        });
     </script>
 </body>
 </html>
