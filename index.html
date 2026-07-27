@@ -22,6 +22,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
     <style>
@@ -43,36 +44,129 @@
             100% { transform: scale(1); }
         }
         .pop-anim { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        .expand-section {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 0;
+        }
+        .expand-section.show {
+            max-height: 200px;
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-300">
 
-    <!-- LOGIN / ONBOARDING SCREEN (TESTING MODE) -->
+    <!-- LOGIN / ONBOARDING SCREEN -->
     <div id="login-screen" class="fixed inset-0 z-50 bg-gray-50/90 dark:bg-gray-900/95 backdrop-blur-md flex flex-col justify-center items-center px-4 transition-opacity duration-500">
         <div class="max-w-md w-full bg-white dark:bg-gray-850 rounded-3xl shadow-2xl p-8 text-center border border-gray-100 dark:border-gray-800/80 relative overflow-hidden">
             
             <div class="w-16 h-16 bg-blue-50 dark:bg-blue-900/40 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-inner">
-                <i class="ph ph-flask text-3xl text-blue-600 dark:text-blue-400"></i>
+                <i class="ph ph-graduation-cap text-3xl text-blue-600 dark:text-blue-400"></i>
             </div>
 
-            <h1 class="text-2xl font-extrabold tracking-tight mb-1">Testing Mode Active</h1>
-            <p class="text-xs text-blue-600 dark:text-blue-400 font-semibold italic mb-1">Roll Number Direct Access</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Enter any SRCC Roll Number to test their generated timetable instantly.</p>
+            <h1 class="text-2xl font-extrabold tracking-tight mb-1">SRCC Trackr</h1>
+            <p class="text-xs text-blue-600 dark:text-blue-400 font-semibold italic mb-1">"Consistency is the currency of success."</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-5">Manage your attendance & sync across any device.</p>
             
+            <!-- Interactive Mode Switcher -->
+            <div class="flex bg-gray-100 dark:bg-gray-900 p-1.5 rounded-2xl mb-6 border border-gray-200/60 dark:border-gray-800">
+                <button type="button" id="tab-signin" onclick="setAuthMode('signin')" class="flex-1 py-2.5 text-xs font-bold rounded-xl bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm btn-transition">Sign In</button>
+                <button type="button" id="tab-register" onclick="setAuthMode('register')" class="flex-1 py-2.5 text-xs font-bold rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 btn-transition">Create Account</button>
+            </div>
+
             <div class="space-y-4 text-left">
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">University Roll Number</label>
+                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Email Address</label>
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-identification-card text-base"></i></span>
-                        <input type="text" id="user-roll-input" placeholder="e.g. 25BC120" class="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white uppercase font-bold" autocomplete="off">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-envelope text-base"></i></span>
+                        <input type="email" id="user-email-input" placeholder="e.g. mukul@srcc.edu" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" autocomplete="off" required>
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-lock text-base"></i></span>
+                        <input type="password" id="user-pass-input" placeholder="••••••••" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" required>
+                    </div>
+                </div>
+
+                <!-- Expandable Fields for Registration Only -->
+                <div id="register-fields" class="expand-section space-y-4">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">First Name</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-user text-base"></i></span>
+                            <input type="text" id="user-name-input" placeholder="e.g. Mukul" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" autocomplete="off">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">Roll Number</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-gray-400"><i class="ph ph-identification-card text-base"></i></span>
+                            <input type="text" id="user-roll-input" placeholder="e.g. 23BC229" class="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 text-sm transition-all dark:text-white" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+                
                 <button id="get-started-btn" class="w-full mt-3 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/25 btn-transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
-                    <span id="login-text">Load Timetable</span>
+                    <span id="login-text">Sign In</span>
                     <i id="login-icon" class="ph ph-arrow-right font-bold text-base"></i>
                 </button>
                 <p id="login-error" class="text-rose-500 text-xs text-center font-medium hide mt-2 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/50"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION & COURSE ONBOARDING SCREEN (A to N, VAC, SEC) -->
+    <div id="section-onboarding-screen" class="fixed inset-0 z-50 bg-gray-50/90 dark:bg-gray-900/95 backdrop-blur-md flex flex-col justify-center items-center px-4 hide transition-opacity duration-500">
+        <div class="max-w-md w-full bg-white dark:bg-gray-850 rounded-3xl shadow-2xl p-8 text-center border border-gray-100 dark:border-gray-800/80">
+            <div class="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/40 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-inner">
+                <i class="ph ph-buildings text-3xl text-indigo-600 dark:text-indigo-400"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold tracking-tight mb-1.5">Configure Your Profile</h1>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Select your section (A to N) and course details to customize your semester tracker.</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">College Section (A - N)</label>
+                    <select id="onboarding-section-select" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white">
+                        <option value="" disabled selected>Select your section</option>
+                        <option value="Section A">Section A</option>
+                        <option value="Section B">Section B</option>
+                        <option value="Section C">Section C</option>
+                        <option value="Section D">Section D</option>
+                        <option value="Section E">Section E</option>
+                        <option value="Section F">Section F</option>
+                        <option value="Section G">Section G</option>
+                        <option value="Section H">Section H</option>
+                        <option value="Section I">Section I</option>
+                        <option value="Section J">Section J</option>
+                        <option value="Section K">Section K</option>
+                        <option value="Section L">Section L</option>
+                        <option value="Section M">Section M</option>
+                        <option value="Section N">Section N</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">VAC Number / Course Name</label>
+                    <input type="text" id="onboarding-vac-input" placeholder="e.g. VAC-102 (Digital Empowerment)" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white" autocomplete="off">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 ml-1">SEC Number / Course Name</label>
+                    <input type="text" id="onboarding-sec-input" placeholder="e.g. SEC-204 (Financial Literacy)" class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-700/80 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all dark:text-white" autocomplete="off">
+                </div>
+
+                <button id="save-onboarding-btn" class="w-full mt-3 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-500/25 btn-transition">
+                    <span>Launch SRCC Trackr</span>
+                    <i class="ph ph-rocket-launch font-bold text-base"></i>
+                </button>
+                <p id="onboarding-error" class="text-rose-500 text-xs text-center font-medium hide mt-2 bg-rose-50 dark:bg-rose-950/40 p-2.5 rounded-lg border border-rose-200 dark:border-rose-900/50"></p>
             </div>
         </div>
     </div>
@@ -258,509 +352,42 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(); // Auth removed for testing
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-        // --- FULL COMPREHENSIVE SRCC DIRECTORY PARSER ---
-        const rawStudents = [
-            // SECTION A
-            ["25BC100", "Anurag Saini", "A", "A1", "AP1", "SEC8", "VAC6"],
-            ["25BC113", "Arjan Singh Bhambra", "A", "A1", "AP1", "", ""],
-            ["25BC115", "Arohi Verma", "A", "A1", "AP1", "", ""],
-            ["25BC120", "Arvin Albert", "A", "A2", "AP2", "SEC2", "VAC6"],
-            ["25BC125", "Asmi Saini", "A", "A2", "AP2", "SEC2", "VAC6"],
-            ["25BC126", "Astik Upadhyay", "A", "A2", "AP2", "SEC21", "VAC6"],
-            ["25BC134", "Avni Narayan Toshniwa", "A", "A2", "AP2", "SEC12", "VAC6"],
-            ["25BC153", "Biplob Payeng", "A", "A2", "AP2", "", ""],
-            ["25BC165", "Darshan dangi", "A", "A2", "AP2", "SEC2", "VAC6"],
-            ["25BC172", "Deetya Bala", "A", "A2", "AP2", "SEC14", "VAC7"],
-            ["25BC188", "Divya Meshram", "A", "A2", "AP2", "", ""],
-            ["25BC202", "Garima Kulhari", "A", "A2", "AP2", "", ""],
-            ["25BC210", "Gauri Chatwani", "A", "A2", "AP2", "", ""],
-            ["25BC212", "Gazal Aggarwal", "A", "A2", "AP2", "", ""],
-            ["25BC225", "Harsh raj", "A", "A2", "AP2", "SEC2", "VAC7"],
-            ["25BC238", "Himesh Harsh", "A", "A2", "AP2", "", ""],
-            ["25BC460", "Rakshit Gupta", "A", "A3", "AP3", "SEC6", "VAC28"],
-            ["25BC474", "Rinkesh", "A", "A3", "AP3", "", ""],
-            ["25BC514", "Samman Giri", "A", "A3", "AP3", "SEC13", "VAC28"],
-            ["25BC569", "Shuvodeep Sarkar", "A", "A3", "AP3", "", ""],
-            ["25BC715", "Ashish Rawat", "A", "A3", "AP3", "", ""],
-            ["25BC731", "Kunga Choedzom", "A", "A3", "AP3", "", ""],
-            ["25BC786", "Samkit Jain", "A", "A3", "AP3", "SEC19", "VAC28"],
-            ["25BC788", "Shawn Mathew", "A", "A3", "AP3", "SEC19", "VAC28"],
-            
-            // SECTION B
-            ["25BC409", "Paridhi Kiran", "B", "B1", "BP1", "SEC9", "VAC8"],
-            ["25BC412", "Payal", "B", "B1", "BP1", "SEC12", "VAC8"],
-            ["25BC424", "Pragati Kumari", "B", "B1", "BP1", "SEC12", "VAC8"],
-            ["25BC427", "Prakash kumar", "B", "B2", "BP2", "", ""],
-            ["25BC432", "Pratigya Sharma", "B", "B2", "BP2", "", ""],
-            ["25BC434", "Pravit Chopra", "B", "B2", "BP2", "", ""],
-            ["25BC437", "Priti goyal", "B", "B2", "BP2", "", ""],
-            ["25BC449", "Rabani Kaur", "B", "B2", "BP2", "", ""],
-            ["25BC451", "Rachit Joshi", "B", "B2", "BP2", "", ""],
-            ["25BC465", "Rene Chiara Momin", "B", "B2", "BP2", "SEC3", "VAC8"],
-            ["25BC469", "Ridhima Dugar", "B", "B2", "BP2", "SEC9", "VAC8"],
-            ["25BC472", "Ridhima Sukriti", "B", "B2", "BP2", "SEC23", "VAC8"],
-            ["25BC492", "Rudra Mahesh Purohit", "B", "B2", "BP2", "", ""],
-            ["25BC513", "Samir Naagar", "B", "B2", "BP2", "SEC13", "VAC8"],
-            ["25BC518", "Sanchay tripathi", "B", "B2", "BP2", "SEC15", "VAC8"],
-            ["25BC519", "Sanchita Priyadarshini Bara", "B", "B2", "BP2", "SEC22", "VAC8"],
-            ["25BC735", "Prakriti Saraff", "B", "B3", "BP3", "", ""],
-            ["25BC742", "Nistha Jain", "B", "B3", "BP3", "SEC10", "VAC9"],
-            ["25BC750", "Aadarsh Saria", "B", "B3", "BP3", "SEC13", "VAC9"],
-            ["25BC761", "Ranbir", "B", "B3", "BP3", "", ""],
-            ["25BC778", "Ishvi Aggarwal", "B", "B3", "BP3", "", ""],
-            ["25BC790", "Sundram Kumar", "B", "B3", "BP3", "SEC13", "VAC9"],
-            ["25BC799", "Anshika Singh Kathayat", "B", "B3", "BP3", "SEC3", "VAC9"],
-            ["25BC813", "Nikita Parmar", "B", "B3", "BP3", "", ""],
+        let currentAuthMode = 'signin'; 
 
-            // SECTION C
-            ["25BC240", "Hriday kaul", "C", "C1", "CP1", "", ""],
-            ["25BC242", "Huzefa Shakeel", "C", "C1", "CP1", "", ""],
-            ["25BC250", "Ishaanvi Ramsisaria", "C", "C1", "CP1", "", ""],
-            ["25BC257", "Jai", "C", "C2", "CP2", "", ""],
-            ["25BC259", "Japesh Pal", "C", "C2", "CP2", "", ""],
-            ["25BC263", "Jatin Kumar", "C", "C2", "CP2", "SEC9", "VAC2"],
-            ["25BC264", "Jatin Mankani", "C", "C2", "CP2", "SEC9", "VAC2"],
-            ["25BC271", "Jonathan Ayush Dohling", "C", "C2", "CP2", "SEC23", "VAC2"],
-            ["25BC297", "Kinjal Goyal", "C", "C2", "CP2", "", ""],
-            ["25BC304", "Koyyada Srija", "C", "C2", "CP2", "", ""],
-            ["25BC319", "Kush Madaan", "C", "C2", "CP2", "SEC9", "VAC2"],
-            ["25BC335", "Madhav Gupta", "C", "C2", "CP2", "", ""],
-            ["25BC343", "Mang muan siam", "C", "C2", "CP2", "", ""],
-            ["25BC353", "Mehul", "C", "C2", "CP2", "", ""],
-            ["25BC370", "Nakul Saini", "C", "C2", "CP2", "SEC9", "VAC2"],
-            ["25BC376", "Naunidh Singh", "C", "C2", "CP2", "SEC9", "VAC2"],
-            ["25BC528", "Sara Hanfi", "C", "C3", "CP3", "", ""],
-            ["25BC533", "Satvik Dhar", "C", "C3", "CP3", "", ""],
-            ["25BC540", "Shaswat Ravi", "C", "C3", "CP3", "", ""],
-            ["25BC545", "Shilon", "C", "C3", "CP3", "SEC13", "VAC3"],
-            ["25BC556", "Shrashti Gupta", "C", "C3", "CP3", "SEC22", "VAC3"],
-            ["25BC560", "Shreya singh", "C", "C3", "CP3", "SEC22", "VAC3"],
-            ["25BC562", "Shrishti", "C", "C3", "CP3", "SEC10", "VAC3"],
-            ["25BC831", "Ishaan Singhal", "C", "C3", "CP3", "", ""],
+        window.setAuthMode = function(mode) {
+            currentAuthMode = mode;
+            const tabSignin = document.getElementById('tab-signin');
+            const tabRegister = document.getElementById('tab-register');
+            const registerFields = document.getElementById('register-fields');
+            const loginText = document.getElementById('login-text');
 
-            // SECTION D
-            ["25BC111", "Archit Kayal", "D", "D1", "DP1", "", ""],
-            ["25BC123", "Aryaveer Razdan", "D", "D1", "DP1", "SEC1", "VAC11"],
-            ["25BC135", "Ayush Agarwal", "D", "D1", "DP1", "SEC2", "VAC11"],
-            ["25BC151", "Bhumi Bilaiya", "D", "D2", "DP2", "", ""],
-            ["25BC167", "Deepanshu chaudhary", "D", "D2", "DP2", "SEC5", "VAC11"],
-            ["25BC180", "Dhruv Makhija", "D", "D2", "DP2", "SEC2", "VAC11"],
-            ["25BC197", "ER KIRAN CHENDHUR", "D", "D2", "DP2", "", ""],
-            ["25BC236", "Himanshu", "D", "D2", "DP2", "", ""],
-            ["25BC254", "Ishya Kaushal", "D", "D2", "DP2", "", ""],
-            ["25BC431", "Prathmesh", "D", "D2", "DP2", "", ""],
-            ["25BC575", "Sneha Priya", "D", "D2", "DP2", "", ""],
-            ["25BC577", "Sohail Ansari", "D", "D2", "DP2", "", ""],
-            ["25BC589", "Suhani kumari", "D", "D2", "DP2", "", ""],
-            ["25BC592", "Sukhwinder Singh", "D", "D2", "DP2", "", ""],
-            ["25BC605", "Tapesh Machya", "D", "D2", "DP2", "SEC23", "VAC3"],
-            ["25BC607", "Tarush Gupta", "D", "D2", "DP2", "SEC3", "VAC3"],
-            ["25BC728", "Aayushma Khaniya", "D", "D3", "DP3", "", ""],
-            ["25BC736", "Pratyush Agrawal", "D", "D3", "DP3", "", ""],
-            ["25BC764", "Divyansh", "D", "D3", "DP3", "", ""],
-            ["25BC784", "Radhika Sharma", "D", "D3", "DP3", "SEC4", "VAC5"],
-            ["25BC793", "Trishna Abhay Waghmare", "D", "D3", "DP3", "SEC3", "VAC5"],
-            ["25BC800", "Anshika Teotia", "D", "D3", "DP3", "SEC23", "VAC5"],
-            ["25BC803", "Dhruv Sud", "D", "D3", "DP3", "SEC3", "VAC5"],
-            ["25BC820", "Siddhid Varad Tripathi", "D", "D3", "DP3", "", ""],
-
-            // SECTION E
-            ["25BC379", "Navya Garg", "E", "E1", "EP1", "", ""],
-            ["25BC386", "Nikhil Chhabra", "E", "E1", "EP1", "", ""],
-            ["25BC387", "Nikhil Giroh", "E", "E1", "EP1", "", ""],
-            ["25BC403", "Paavni Gupta", "E", "E2", "EP2", "SEC12", "VAC12"],
-            ["25BC405", "Palak Snehi", "E", "E2", "EP2", "SEC17", "VAC12"],
-            ["25BC408", "Pankaj Lodiya", "E", "E2", "EP2", "SEC20", "VAC12"],
-            ["25BC413", "Payel Bhengra", "E", "E2", "EP2", "SEC17", "VAC12"],
-            ["25BC414", "Pearl Bhagat", "E", "E2", "EP2", "SEC14", "VAC12"],
-            ["25BC422", "Prachi", "E", "E2", "EP2", "SEC12", "VAC12"],
-            ["25BC433", "Pratyaksh Kumar Bhatia", "E", "E2", "EP2", "", ""],
-            ["25BC436", "Prithviraj Marodia", "E", "E2", "EP2", "", ""],
-            ["25BC438", "Priya Rakshit", "E", "E2", "EP2", "", ""],
-            ["25BC439", "Priya Rana", "E", "E2", "EP2", "", ""],
-            ["25BC468", "Riddhima", "E", "E2", "EP2", "SEC15", "VAC13"],
-            ["25BC479", "Rishika Yadav", "E", "E2", "EP2", "", ""],
-            ["25BC480", "Rishikesh Deka", "E", "E2", "EP2", "", ""],
-            ["25BC723", "Vansh Goel", "E", "E3", "EP3", "", ""],
-            ["25BC727", "Aayush Kumar Sah", "E", "E3", "EP3", "", ""],
-            ["25BC738", "Vatsal Agrawal", "E", "E3", "EP3", "SEC19", "VAC13"],
-            ["25BC739", "Yukta Agrawal", "E", "E3", "EP3", "SEC13", "VAC14"],
-            ["25BC747", "Umang Agrawal", "E", "E3", "EP3", "SEC13", "VAC14"],
-            ["25BC751", "Shrishti Verma", "E", "E3", "EP3", "SEC18", "VAC14"],
-            ["25BC763", "Devanshi Sharma", "E", "E3", "EP3", "", ""],
-            ["25BC819", "Siddharth Dobhal", "E", "E3", "EP3", "", ""],
-
-            // SECTION F
-            ["25BC223", "Harsh Garg", "F", "F1", "FP1", "SEC8", "VAC19"],
-            ["25BC230", "Harshita Yadav", "F", "F1", "FP1", "SEC5", "VAC19"],
-            ["25BC241", "Hridyaan verma", "F", "F1", "FP1", "", ""],
-            ["25BC253", "Ishita Dhull", "F", "F2", "FP2", "", ""],
-            ["25BC261", "Jaspreet Kaur", "F", "F2", "FP2", "SEC12", "VAC19"],
-            ["25BC279", "Kartik Pahilajani", "F", "F2", "FP2", "SEC9", "VAC19"],
-            ["25BC280", "KARTIK SRIVASTAV", "F", "F2", "FP2", "SEC9", "VAC19"],
-            ["25BC284", "Keshav Gupta", "F", "F2", "FP2", "", ""],
-            ["25BC289", "Khushant Sunaria", "F", "F2", "FP2", "", ""],
-            ["25BC291", "Khushi", "F", "F2", "FP2", "", ""],
-            ["25BC293", "Khushi Ralhan", "F", "F2", "FP2", "", ""],
-            ["25BC294", "Khushi Yadav", "F", "F2", "FP2", "", ""],
-            ["25BC307", "Krish kheria", "F", "F2", "FP2", "SEC9", "VAC20"],
-            ["25BC348", "Mauli Rai", "F", "F2", "FP2", "", ""],
-            ["25BC350", "Megha", "F", "F2", "FP2", "", ""],
-            ["25BC382", "Neritya Bighot", "F", "F2", "FP2", "", ""],
-            ["25BC583", "Srishti Mittal", "F", "F3", "FP3", "", ""],
-            ["25BC597", "Swanman Koul", "F", "F3", "FP3", "SEC23", "VAC21"],
-            ["25BC600", "Tanushree", "F", "F3", "FP3", "SEC13", "VAC21"],
-            ["25BC618", "Upasana Mukoo", "F", "F3", "FP3", "", ""],
-            ["25BC653", "Vedika Rana", "F", "F3", "FP3", "SEC14", "VAC21"],
-            ["25BC664", "Vrinda", "F", "F3", "FP3", "", ""],
-            ["25BC692", "Gautam Agrawal", "F", "F3", "FP3", "SEC19", "VAC21"],
-            ["25BC693", "Girish Agrawal", "F", "F3", "FP3", "SEC19", "VAC21"],
-
-            // SECTION G
-            ["25BC175", "Devanshgyan Saxena", "G", "G1", "GP1", "SEC7", "VAC15"],
-            ["25BC179", "Dhruv Hajang", "G", "G1", "GP1", "SEC1", "VAC15"],
-            ["25BC183", "Dilpreet Kaur", "G", "G2", "GP2", "SEC14", "VAC15"],
-            ["25BC198", "Eidu Zaifa", "G", "G2", "GP2", "", ""],
-            ["25BC215", "Gunjan Sahu", "G", "G2", "GP2", "SEC2", "VAC15"],
-            ["25BC245", "Iman", "G", "G2", "GP2", "", ""],
-            ["25BC258", "Jaishree Kushwaha", "G", "G2", "GP2", "", ""],
-            ["25BC270", "Jiya arora", "G", "G2", "GP2", "SEC5", "VAC15"],
-            ["25BC286", "Khanak Arora", "G", "G2", "GP2", "", ""],
-            ["25BC308", "Krish Raj", "G", "G2", "GP2", "SEC5", "VAC16"],
-            ["25BC322", "Lakshay Danterwal", "G", "G2", "GP2", "SEC15", "VAC16"],
-            ["25BC330", "Maahi Babani", "G", "G2", "GP2", "", ""],
-            ["25BC332", "Maahi Tyagi", "G", "G2", "GP2", "", ""],
-            ["25BC346", "Mannat Singhania", "G", "G2", "GP2", "", ""],
-            ["25BC453", "Raghav Garodia", "G", "G2", "GP2", "SEC20", "VAC16"],
-            ["25BC458", "Rajdeep Kundu", "G", "G2", "GP2", "SEC20", "VAC16"],
-            ["25BC785", "Ranvir Chaudhary", "G", "G3", "GP3", "SEC19", "VAC21"],
-            ["25BC796", "Adarsh kumar prajapati", "G", "G3", "GP3", "SEC19", "VAC21"],
-            ["25BC811", "Manya Ohri", "G", "G3", "GP3", "", ""],
-            ["25BC816", "Sachi singh", "G", "G3", "GP3", "", ""],
-            ["25BC823", "Umang Kumar", "G", "G3", "GP3", "", ""],
-            ["25BC824", "Shudhanshu singh", "G", "G3", "GP3", "", ""],
-
-            // SECTION H
-            ["25BC384", "Niket Raj", "H", "H1", "HP1", "", ""],
-            ["25BC390", "Nikunj Taori", "H", "H1", "HP1", "", ""],
-            ["25BC462", "Rashi Goyal", "H", "H2", "HP2", "SEC17", "VAC24"],
-            ["25BC490", "Rohit Kumar", "H", "H2", "HP2", "", ""],
-            ["25BC508", "Saksham Singh", "H", "H2", "HP2", "SEC10", "VAC24"],
-            ["25BC516", "Samriddhi Gupta", "H", "H2", "HP2", "SEC20", "VAC29"],
-            ["25BC527", "Sanyam Vashishtha", "H", "H2", "HP2", "", ""],
-            ["25BC531", "Sashank Deora", "H", "H2", "HP2", "", ""],
-            ["25BC532", "Satnam Singh", "H", "H2", "HP2", "", ""],
-            ["25BC538", "Shailaja Das", "H", "H2", "HP2", "", ""],
-            ["25BC541", "Shaurya Bhasin", "H", "H2", "HP2", "", ""],
-            ["25BC547", "Shivam Gupta", "H", "H2", "HP2", "SEC10", "VAC17"],
-            ["25BC551", "Shivanshu", "H", "H2", "HP2", "SEC3", "VAC24"],
-            ["25BC552", "Shivanshu Khemka", "H", "H2", "HP2", "SEC3", "VAC24"],
-            ["25BC557", "Shreeya Sawhney", "H", "H2", "HP2", "SEC13", "VAC17"],
-            ["25BC590", "Suhani Yadav", "H", "H2", "HP2", "", ""],
-            ["25BC743", "Raahat Shah", "H", "H3", "HP3", "SEC18", "VAC17"],
-            ["25BC746", "Shreya Singh", "H", "H3", "HP3", "SEC19", "VAC17"],
-            ["25BC762", "Lakshita mittal", "H", "H3", "HP3", "", ""],
-            ["25BC766", "Amulya Jindal", "H", "H3", "HP3", "", ""],
-            ["25BC769", "Lakshita Jain", "H", "H3", "HP3", "", ""],
-            ["25BC807", "Himanshu", "H", "H3", "HP3", "", ""],
-            ["25BC809", "Kirti", "H", "H3", "HP3", "", ""],
-
-            // SECTION I
-            ["25BC337", "Maitreyi Balasubramanian", "I", "I1", "IP1", "", ""],
-            ["25BC378", "Navneet Singh", "I", "I1", "IP1", "", ""],
-            ["25BC380", "Navya Jain", "I", "I1", "IP1", "", ""],
-            ["25BC443", "Priyanshu Verma", "I", "I1", "IP1", "", ""],
-            ["25BC729", "Divyansh Maru", "I", "I1", "IP1", "", ""],
-            ["25BC758", "Salvia Verma", "I", "I1", "IP1", "SEC13", "VAC24"],
-            ["25BC283", "Kashvi Bhansali", "I", "I2", "IP2", "", ""],
-            ["25BC295", "Khyati", "I", "I2", "IP2", "", ""],
-            ["25BC299", "Kirti Chauhan", "I", "I2", "IP2", "", ""],
-            ["25BC300", "Kishan Kumar Sharma", "I", "I2", "IP2", "", ""],
-            ["25BC328", "M.C. Suan Cin Khup", "I", "I2", "IP2", "SEC4", "VAC27"],
-            ["25BC446", "Pushkar Tiwari", "I", "I2", "IP2", "", ""],
-            ["25BC491", "Roshan Moolchandani", "I", "I2", "IP2", "", ""],
-            ["25BC667", "Yash Singla", "I", "I2", "IP2", "", ""],
-            ["25BC825", "Sanya Tatia Jain", "I", "I2", "IP2", "", ""],
-            ["25BC310", "Krishna Chandra Dharua", "I", "I3", "IP3", "SEC4", "VAC7"],
-            ["25BC338", "Manan Jain", "I", "I3", "IP3", "", ""],
-            ["25BC388", "Nikhil Singh Saini", "I", "I3", "IP3", "", ""],
-            ["25BC442", "PRIYANSHU AGRAWAL", "I", "I3", "IP3", "", ""],
-            ["25BC456", "Raj Asles", "I", "I3", "IP3", "SEC9", "VAC28"],
-            ["25BC485", "Ritwik Jaiswal", "I", "I3", "IP3", "", ""],
-            ["25BC679", "ZAID", "I", "I3", "IP3", "", ""],
-            ["25BC711", "Tanush Garg", "I", "I3", "IP3", "", ""],
-            ["25BC798", "Alok Singh Naruka", "I", "I3", "IP3", "SEC10", "VAC21"],
-
-            // SECTION J
-            ["25BC347", "Manu Dev", "J", "J1", "JP1", "", ""],
-            ["25BC365", "Mrinalika Bhargav", "J", "J1", "JP1", "SEC23", "VAC20"],
-            ["25BC366", "Mrityunjay Sahoo", "J", "J1", "JP1", "SEC12", "VAC25"],
-            ["25BC373", "Namita", "J", "J2", "JP2", "SEC23", "VAC2"],
-            ["25BC397", "Niyati", "J", "J2", "JP2", "", ""],
-            ["25BC398", "Novesh Sharma", "J", "J2", "JP2", "", ""],
-            ["25BC402", "Paarth Sharma", "J", "J2", "JP2", "", ""],
-            ["25BC455", "Raghav Saraf", "J", "J2", "JP2", "SEC20", "VAC2"],
-            ["25BC473", "Riewsanbhalang Kharsati Lamar", "J", "J2", "JP2", "SEC23", "VAC13"],
-            ["25BC491", "Roshan Moolchandani", "J", "J2", "JP2", "", ""],
-            ["25BC523", "Sanskar Garg", "J", "J2", "JP2", "", ""],
-            ["25BC529", "Saransh Kumar Gupta", "J", "J2", "JP2", "", ""],
-            ["25BC535", "Satyam kumar", "J", "J2", "JP2", "", ""],
-            ["25BC544", "Shaurya Singh", "J", "J2", "JP2", "", ""],
-            ["25BC565", "Shubh Gupta", "J", "J2", "JP2", "SEC10", "VAC24"],
-            ["25BC579", "Somil Agrawal", "J", "J2", "JP2", "", ""],
-            ["25BC702", "Bishal Dev", "J", "J3", "JP3", "SEC22", "VAC21"],
-            ["25BC756", "Stanzin Chosphel", "J", "J3", "JP3", "SEC16", "VAC24"],
-            ["25BC757", "Yash Kumar Manjhi", "J", "J3", "JP3", "SEC10", "VAC21"],
-            ["25BC770", "Vidushi Arora", "J", "J3", "JP3", "", ""],
-            ["25BC805", "Harsh Malviya", "J", "J3", "JP3", "SEC16", "VAC9"],
-            ["25BC822", "Thaneshwar Bhattrai", "J", "J3", "JP3", "", ""],
-            ["25BC829", "Aalya Singh", "J", "J3", "JP3", "", ""],
-            ["25BC832", "Akshit Yadav", "J", "J3", "JP3", "SEC16", ""],
-
-            // SECTION K
-            ["25BC466", "Riddhi Agarwal", "K", "K1", "KP1", "SEC13", "VAC16"],
-            ["25BC486", "Riya Choudhary", "K", "K1", "KP1", "", ""],
-            ["25BC487", "Riya Kumari", "K", "K1", "KP1", "", ""],
-            ["25BC510", "Sakshi Deepak Surve", "K", "K2", "KP2", "SEC22", "VAC25"],
-            ["25BC511", "Saleheen Ara", "K", "K2", "KP2", "SEC10", "VAC25"],
-            ["25BC520", "Sandli Bhatnagar", "K", "K2", "KP2", "SEC20", "VAC8"],
-            ["25BC524", "SANSKAR JAIN", "K", "K2", "KP2", "", ""],
-            ["25BC566", "Shubh narnoli", "K", "K2", "KP2", "SEC6", "VAC17"],
-            ["25BC573", "Skanda Rawte", "K", "K2", "KP2", "", ""],
-            ["25BC596", "SUVANI BHAT", "K", "K2", "KP2", "SEC10", "VAC9"],
-            ["25BC599", "Tanishq", "K", "K2", "KP2", "SEC6", "VAC9"],
-            ["25BC627", "Vaibhav Shukla", "K", "K2", "KP2", "", ""],
-            ["25BC632", "Vaishnavi Sandip Adepwar", "K", "K2", "KP2", "", ""],
-            ["25BC663", "Vrasty", "K", "K2", "KP2", "", ""],
-            ["25BC666", "Yash Aggarwal", "K", "K2", "KP2", "", ""],
-            ["25BC680", "Harshita godara", "K", "K2", "KP2", "", ""],
-
-            // SECTION L
-            ["25BC282", "Kartikeya Kumar", "L", "L1", "LP1", "", ""],
-            ["25BC311", "Krishna Singh Chouhan", "L", "L1", "LP1", "SEC6", "VAC2"],
-            ["25BC349", "Mayank Patel", "L", "L1", "LP1", "", ""],
-            ["25BC359", "Mohd Adnan Ansari", "L", "L1", "LP1", "SEC4", "VAC7"],
-            ["25BC391", "Nilesh Yadav", "L", "L1", "LP1", "", ""],
-            ["25BC445", "Puneet kumar", "L", "L1", "LP1", "", ""],
-            ["25BC450", "Rachel", "L", "L1", "LP1", "", ""],
-            ["25BC789", "Siddharth Rawat", "L", "L1", "LP1", "SEC13", "VAC5"],
-            ["25BC795", "Yashasvi Singh", "L", "L1", "LP1", "SEC19", "VAC9"],
-            ["25BC806", "Harshita Sharma", "L", "L1", "LP1", "", ""],
-            ["25BC815", "Reyansh Singh Kotwal", "L", "L1", "LP1", "", ""],
-            ["25BC369", "Muskan", "L", "L2", "LP2", "SEC9", "VAC16"],
-            ["25BC381", "Neil Sharma", "L", "L2", "LP2", "", ""],
-            ["25BC415", "Pearl Dambi", "L", "L2", "LP2", "SEC20", "VAC20"],
-            ["25BC425", "Pragya Yadav", "L", "L2", "LP2", "", ""],
-            ["25BC507", "Saksham Sharma", "L", "L2", "LP2", "SEC13", "VAC13"],
-            ["25BC555", "Shourav kumar", "L", "L2", "LP2", "SEC13", "VAC13"],
-            ["25BC787", "Sampann Bansal", "L", "L2", "LP2", "SEC3", "VAC14"],
-            ["25BC791", "Swaastik Misra", "L", "L2", "LP2", "SEC4", "VAC21"],
-            ["25BC792", "Tarush Garg", "L", "L2", "LP2", "SEC3", "VAC14"],
-            ["25BC794", "Vihaan Lamba", "L", "L2", "LP2", "SEC3", "VAC14"],
-            ["25BC808", "Kartik", "L", "L2", "LP2", "", ""],
-            ["25BC303", "Koushika Bhat", "L", "L3", "LP3", "", ""],
-            ["25BC418", "Piyush Kumawat", "L", "L3", "LP3", "SEC15", "VAC27"],
-            ["25BC515", "Samradnya Mahesh kowe", "L", "L3", "LP3", "SEC4", "VAC20"],
-            ["25BC810", "Love Pratap Raghav", "L", "L3", "LP3", "", ""],
-            ["25BC833", "Prabal Gurung", "L", "L3", "LP3", "SEC20", "VAC17"],
-
-            // SECTION M
-            ["25BC145", "Bhavya Kabra", "M", "M1", "MP1", "", ""],
-            ["25BC159", "Chhavi", "M", "M1", "MP1", "", ""],
-            ["25BC174", "Devansh Prasad", "M", "M1", "MP1", "SEC5", "VAC28"],
-            ["25BC177", "Devna Razdan", "M", "M1", "MP1", "SEC7", "VAC7"],
-            ["25BC181", "Dhruv Tandon", "M", "M1", "MP1", "SEC5", "VAC28"],
-            ["25BC217", "GURU VIDHUN DM", "M", "M1", "MP1", "SEC7", "VAC28"],
-            ["25BC251", "Ishan Prakash Nagpal", "M", "M1", "MP1", "", ""],
-            ["25BC327", "Lavanya Singh", "M", "M1", "MP1", "SEC9", "VAC7"],
-            ["25BC372", "Namandeep Singh", "M", "M1", "MP1", "SEC2", "VAC2"],
-            ["25BC410", "Parth Goel", "M", "M1", "MP1", "SEC17", "VAC8"],
-            ["25BC760", "Drish Goel", "M", "M1", "MP1", "", ""],
-            ["25BC231", "Hawa Intikhab", "M", "M2", "MP2", "SEC5", "VAC19"],
-            ["25BC305", "Kratika Soni", "M", "M2", "MP2", "", ""],
-            ["25BC685", "Himani Poddar", "M", "M2", "MP2", "", ""],
-            ["25BC753", "Akshat Singh", "M", "M2", "MP2", "SEC10", "VAC5"],
-            ["25BC818", "Shakshi Kumari", "M", "M2", "MP2", "", ""],
-            ["25BC224", "Harsh Kumar", "M", "M3", "MP3", "SEC2", "VAC11"],
-            ["25BC277", "Karan Veer Singh", "M", "M3", "MP3", "SEC2", "VAC7"],
-            ["25BC285", "Keshav Mittal", "M", "M3", "MP3", "", ""],
-            ["25BC301", "Komal", "M", "M3", "MP3", "", ""],
-            ["25BC691", "Diksha Sharma", "M", "M3", "MP3", "SEC17", "VAC5"],
-            ["25BC719", "Ritesh Kumar Yadav", "M", "M3", "MP3", "", ""],
-
-            // SECTION N
-            ["25BC199", "Eshita Singh", "N", "N1", "NP1", "", ""],
-            ["25BC200", "Faisal Hammad", "N", "N1", "NP1", "", ""],
-            ["25BC326", "Lakshya Malaiya", "N", "N1", "NP1", "SEC12", "VAC2"],
-            ["25BC344", "Manik Garg", "N", "N1", "NP1", "", ""],
-            ["25BC396", "Nitisha Vijay Chauware", "N", "N1", "NP1", "", ""],
-            ["25BC417", "Piyush Kumar", "N", "N1", "NP1", "SEC15", "VAC8"],
-            ["25BC459", "Rajput Krish Pratapsing", "N", "N1", "NP1", "SEC13", "VAC3"],
-            ["25BC213", "Ghanashyam T Raj", "N", "N2", "NP2", "SEC8", "VAC25"],
-            ["25BC278", "Karthic U", "N", "N2", "NP2", "SEC0", "VAC16"],
-            ["25BC281", "KARTIKEY TIWARI", "N", "N2", "NP2", "SEC20", "VAC29"],
-            ["25BC454", "Raghav Rajyavardhan", "N", "N2", "NP2", "SEC13", "VAC24"],
-            ["25BC744", "Sharad Kabariya", "N", "N2", "NP2", "SEC22", "VAC27"],
-            ["25BC316", "Kumari Mitali", "N", "N3", "NP3", "SEC22", "VAC16"],
-            ["25BC333", "Maanit Lamba", "N", "N3", "NP3", "", ""],
-            ["25BC334", "Maanya Gautam", "N", "N3", "NP3", "", ""],
-            ["25BC426", "Prajual Agrawal", "N", "N3", "NP3", "", ""],
-            ["25BC463", "Ravi Choudhary", "N", "N3", "NP3", "SEC17", "VAC28"],
-            ["25BC802", "Dhruv Sharma", "N", "N3", "NP3", "SEC10", "VAC14"],
-            ["25BC804", "Gurpinder Singh", "N", "N3", "NP3", "SEC10", "VAC14"],
-            ["25BC812", "Mukul singh", "N", "N3", "NP3", "", ""],
-            ["25BC826", "Kushan Dalal", "N", "N3", "NP3", "", ""],
-            ["25BC827", "Shaurya singh", "N", "N3", "NP3", "", ""]
-        ];
-
-        const studentDirectory = {};
-        rawStudents.forEach(s => {
-            studentDirectory[s[0].toUpperCase()] = {
-                name: s[1],
-                section: s[2],
-                tutGroup: s[3],
-                pracGroup: s[4],
-                sec: s[5] || "TBD",
-                vac: s[6] || "TBD"
-            };
-        });
-
-        // --- THE MASTER TIMETABLE DATABASE ENGINE ---
-        let masterTimetable = [
-            // SECTION A CORE & LABS
-            { id: 'm_a_c1', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Business Research Methods', type: 'Core', room: 'R35', section: 'A', group: 'ALL' },
-            { id: 'm_a_c2', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Core', room: 'R10', section: 'A', group: 'ALL' },
-            { id: 'm_a_c3', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R3', section: 'A', group: 'ALL' },
-            { id: 'm_a_l1', day: 2, time: '08:30 AM - 09:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP1' },
-            { id: 'm_a_l2', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP3' },
-            { id: 'm_a_l3', day: 2, time: '10:30 AM - 11:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'R31', section: 'A', group: 'AP2' },
-            { id: 'm_a_c4', day: 3, time: '08:30 AM - 09:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R19', section: 'A', group: 'ALL' },
-            { id: 'm_a_c5', day: 3, time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Core', room: 'R2', section: 'A', group: 'ALL' },
-            { id: 'm_a_c6', day: 3, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R2', section: 'A', group: 'ALL' },
-            { id: 'm_a_l4', day: 3, time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R33', section: 'A', group: 'AP1' },
-            { id: 'm_a_l5', day: 3, time: '12:30 PM - 01:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R33', section: 'A', group: 'AP2' },
-            { id: 'm_a_l6', day: 3, time: '01:30 PM - 02:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R33', section: 'A', group: 'AP3' },
-            
-            // SECTION B CORE & LABS
-            { id: 'm_b_c1', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R18', section: 'B', group: 'ALL' },
-            { id: 'm_b_c2', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R27', section: 'B', group: 'ALL' },
-            { id: 'm_b_c3', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Financial Management', type: 'Core', room: 'R1', section: 'B', group: 'ALL' },
-            { id: 'm_b_l1', day: 2, time: '11:30 AM - 12:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'R10', section: 'B', group: 'BP1' },
-            { id: 'm_b_l2', day: 2, time: '12:30 PM - 01:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'R10', section: 'B', group: 'BP2' },
-            { id: 'm_b_l3', day: 2, time: '01:30 PM - 02:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'R10', section: 'B', group: 'BP3' },
-            
-            // SECTION C CORE & LABS
-            { id: 'm_c_c1', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R15', section: 'C', group: 'ALL' },
-            { id: 'm_c_c2', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Financial Management', type: 'Core', room: 'R13', section: 'C', group: 'ALL' },
-            { id: 'm_c_l1', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'T33', section: 'C', group: 'CP3' },
-            { id: 'm_c_c3', day: 2, time: '08:30 AM - 09:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R13', section: 'C', group: 'ALL' },
-            { id: 'm_c_c4', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R5', section: 'C', group: 'ALL' },
-            { id: 'm_c_l2', day: 2, time: '10:30 AM - 11:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'CL2', section: 'C', group: 'CP1' },
-            { id: 'm_c_l3', day: 2, time: '11:30 AM - 12:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'CL2', section: 'C', group: 'CP2' },
-            { id: 'm_c_l4', day: 2, time: '12:30 PM - 01:30 PM', subject: 'Financial Management Lab', type: 'Lab', room: 'CL2', section: 'C', group: 'CP3' },
-
-            // SECTION N CORE & LABS
-            { id: 'm_n_c1', day: 1, time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'R2', section: 'N', group: 'ALL' },
-            { id: 'm_n_l1', day: 1, time: '09:30 AM - 10:30 AM', subject: 'Financial Management Lab', type: 'Lab', room: 'Library FF', section: 'N', group: 'NP1' },
-            { id: 'm_n_l2', day: 1, time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'T48', section: 'N', group: 'NP3' },
-            { id: 'm_n_l3', day: 1, time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R36', section: 'N', group: 'NP1' },
-            { id: 'm_n_c2', day: 2, time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'PB3', section: 'N', group: 'ALL' },
-            { id: 'm_n_l4', day: 2, time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics Lab', type: 'Lab', room: 'R36', section: 'N', group: 'NP2' },
-            { id: 'm_n_c3', day: 3, time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Core', room: 'CL1', section: 'N', group: 'ALL' },
-            { id: 'm_n_c4', day: 3, time: '10:30 AM - 11:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R10', section: 'N', group: 'ALL' },
-            { id: 'm_n_c5', day: 4, time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Core', room: 'R32', section: 'N', group: 'ALL' },
-            { id: 'm_n_c6', day: 5, time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Core', room: 'R34', section: 'N', group: 'ALL' },
-            { id: 'm_n_c7', day: 5, time: '10:30 AM - 11:30 AM', subject: 'Principles of Marketing', type: 'Core', room: 'R21', section: 'N', group: 'ALL' }
-        ];
-
-        // ADD GENERIC CORE CLASSES FOR OTHER SECTIONS
-        const allSections = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
-        allSections.forEach(sec => {
-            masterTimetable.push({ id: `gen_${sec}1`, day: 1, time: '09:30 AM - 10:30 AM', subject: 'Core Lectures Loading...', type: 'Core', room: 'TBD', section: sec, group: 'ALL' });
-            masterTimetable.push({ id: `gen_${sec}2`, day: 2, time: '10:30 AM - 11:30 AM', subject: 'Core Lectures Loading...', type: 'Core', room: 'TBD', section: sec, group: 'ALL' });
-            masterTimetable.push({ id: `gen_${sec}3`, day: 3, time: '08:30 AM - 09:30 AM', subject: 'Core Lectures Loading...', type: 'Core', room: 'TBD', section: sec, group: 'ALL' });
-        });
-
-        // --- PRECISE SEC/VAC ALGORITHMIC PARSER ---
-        const secVacTimings = [
-            { code: 'SEC1', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R2'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R2'}] },
-            { code: 'SEC2', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R15'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R15'}] },
-            { code: 'SEC3', slots: [{d: 1, t: '11:30 AM - 12:30 PM', r: 'R15'}, {d: 4, t: '08:30 AM - 09:30 AM', r: 'R13'}] },
-            { code: 'SEC4', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R7'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R7'}, {d: 4, t: '08:30 AM - 09:30 AM', r: 'R4'}] },
-            { code: 'SEC5', slots: [{d: 1, t: '10:30 AM - 11:30 AM', r: 'R10'}, {d: 2, t: '10:30 AM - 11:30 AM', r: 'R19'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R19'}] },
-            { code: 'SEC6', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R22'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R22'}] },
-            { code: 'SEC7', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R33'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R33'}] },
-            { code: 'SEC8', slots: [{d: 2, t: '08:30 AM - 09:30 AM', r: 'R5'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R5'}] },
-            { code: 'SEC9', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R30'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R30'}] },
-            { code: 'SEC10', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R29'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R29'}] },
-            { code: 'SEC11', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'CL2'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'CL2'}] },
-            { code: 'SEC12', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R25'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R25'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R25'}] },
-            { code: 'SEC13', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'PB4'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'PB4'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'PB4'}] },
-            { code: 'SEC14', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R31'}] },
-            { code: 'SEC15', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'PB3'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'PB3'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'PB3'}] },
-            { code: 'SEC16', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'CLIB'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'CLIB'}] },
-            { code: 'SEC17', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R19'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R19'}] },
-            { code: 'SEC18', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R20'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R20'}] },
-            { code: 'SEC19', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R16'}, {d: 4, t: '08:30 AM - 09:30 AM', r: 'R16'}] },
-            { code: 'SEC20', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R14'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R14'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R14'}] },
-            { code: 'SEC21', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R20'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R20'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R20'}] },
-            { code: 'SEC22', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'C11'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'C11'}] },
-            { code: 'SEC23', slots: [{d: 4, t: '08:30 AM - 09:30 AM', r: 'R21'}, {d: 4, t: '09:30 AM - 10:30 AM', r: 'R21'}] },
-            { code: 'SEC24', slots: [{d: 2, t: '10:30 AM - 11:30 AM', r: 'R24'}, {d: 2, t: '11:30 AM - 12:30 PM', r: 'R24'}, {d: 2, t: '12:30 PM - 01:30 PM', r: 'R24'}] },
-            
-            { code: 'VAC1', slots: [{d: 1, t: '09:30 AM - 10:30 AM', r: 'R1'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R1'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R1'}] },
-            { code: 'VAC2', slots: [{d: 1, t: '08:30 AM - 09:30 AM', r: 'R1'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R1'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R1'}] },
-            { code: 'VAC3', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R6'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R6'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R6'}] },
-            { code: 'VAC4', slots: [{d: 1, t: '10:30 AM - 11:30 AM', r: 'R13'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R16'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R16'}] },
-            { code: 'VAC5', slots: [{d: 1, t: '02:00 PM - 03:00 PM', r: 'R6'}, {d: 6, t: '08:30 AM - 09:30 AM', r: 'R5'}] },
-            { code: 'VAC6', slots: [{d: 1, t: '08:30 AM - 09:30 AM', r: 'R17'}, {d: 1, t: '09:30 AM - 10:30 AM', r: 'R17'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R17'}] },
-            { code: 'VAC7', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R17'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R17'}, {d: 6, t: '08:30 AM - 09:30 AM', r: 'R4'}] },
-            { code: 'VAC8', slots: [{d: 1, t: '08:30 AM - 09:30 AM', r: 'R5'}, {d: 1, t: '09:30 AM - 10:30 AM', r: 'R5'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R18'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R18'}] },
-            { code: 'VAC9', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R14'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R18'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R18'}] },
-            { code: 'VAC10', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R23'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R23'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R14'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R14'}] },
-            { code: 'VAC11', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R19'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R19'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R19'}] },
-            { code: 'VAC12', slots: [{d: 1, t: '02:00 PM - 03:00 PM', r: 'R19'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R20'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R20'}] },
-            { code: 'VAC13', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'PB3'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'PB3'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'PB3'}] },
-            { code: 'VAC14', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R26'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R13'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R13'}] },
-            { code: 'VAC15', slots: [{d: 1, t: '08:30 AM - 09:30 AM', r: 'R3'}, {d: 1, t: '09:30 AM - 10:30 AM', r: 'R3'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R3'}] },
-            { code: 'VAC16', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R4'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R4'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R3'}] },
-            { code: 'VAC17', slots: [{d: 5, t: '08:30 AM - 09:30 AM', r: 'R5'}, {d: 6, t: '08:30 AM - 09:30 AM', r: 'R3'}] },
-            { code: 'VAC18', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R5'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R5'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R5'}] },
-            { code: 'VAC19', slots: [{d: 1, t: '02:00 PM - 03:00 PM', r: 'PB3'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R28'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R28'}] },
-            { code: 'VAC20', slots: [{d: 1, t: '02:00 PM - 03:00 PM', r: 'R13'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R24'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R24'}] },
-            { code: 'VAC21', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R13'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R24'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R24'}] },
-            { code: 'VAC22', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R25'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R25'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R25'}] },
-            { code: 'VAC23', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R15'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R15'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R15'}] },
-            { code: 'VAC24', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R15'}, {d: 1, t: '02:30 PM - 03:30 PM', r: 'R15'}, {d: 3, t: '09:30 AM - 10:30 AM', r: 'R15'}] },
-            { code: 'VAC25', slots: [{d: 1, t: '01:30 PM - 02:30 PM', r: 'R18'}, {d: 1, t: '02:30 PM - 03:30 PM', r: 'R18'}, {d: 3, t: '08:30 AM - 09:30 AM', r: 'R27'}] },
-            { code: 'VAC26', slots: [{d: 1, t: '10:30 AM - 11:30 AM', r: 'R14'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R23'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R23'}] },
-            { code: 'VAC27', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R31'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R26'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R26'}] },
-            { code: 'VAC28', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'R7'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'R8'}, {d: 5, t: '09:30 AM - 10:30 AM', r: 'R8'}] },
-            { code: 'VAC29', slots: [{d: 3, t: '08:30 AM - 09:30 AM', r: 'TBD'}, {d: 5, t: '08:30 AM - 09:30 AM', r: 'TBD'}] }
-        ];
-
-        secVacTimings.forEach(item => {
-            item.slots.forEach((slot, index) => {
-                masterTimetable.push({
-                    id: `${item.code.toLowerCase()}_${index}`,
-                    day: slot.d,
-                    time: slot.t,
-                    subject: item.code + ' Class',
-                    type: item.code.includes('SEC') ? 'SEC' : 'VAC',
-                    room: slot.r,
-                    section: 'ALL',
-                    courseCode: item.code
-                });
-            });
-        });
+            if (mode === 'signin') {
+                tabSignin.className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm btn-transition";
+                tabRegister.className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 btn-transition";
+                registerFields.classList.remove('show');
+                loginText.innerText = "Sign In";
+            } else {
+                tabRegister.className = "flex-1 py-2.5 text-xs font-bold rounded-xl bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm btn-transition";
+                tabSignin.className = "flex-1 py-2.5 text-xs font-bold rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 btn-transition";
+                registerFields.classList.add('show');
+                loginText.innerText = "Create Account";
+            }
+        };
 
         const loginScreen = document.getElementById('login-screen');
+        const sectionOnboardingScreen = document.getElementById('section-onboarding-screen');
         const appWrapper = document.getElementById('app-wrapper');
         const getStartedBtn = document.getElementById('get-started-btn');
+        const saveOnboardingBtn = document.getElementById('save-onboarding-btn');
+        const emailInput = document.getElementById('user-email-input');
+        const passInput = document.getElementById('user-pass-input');
+        const nameInput = document.getElementById('user-name-input');
         const rollInput = document.getElementById('user-roll-input');
         const loginError = document.getElementById('login-error');
+        const onboardingError = document.getElementById('onboarding-error');
         const logoutBtn = document.getElementById('logout-btn');
         const greetingText = document.getElementById('greeting-text');
         const headerSectionBadge = document.getElementById('header-section-badge');
@@ -769,68 +396,103 @@
         let currentUserUid = null;
         let cachedUserData = {};
 
-        // TEST MODE: Check for existing session directly from localStorage
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedRoll = localStorage.getItem('trackr_roll_number');
-            if (savedRoll) {
-                currentUserUid = savedRoll;
-                verifyAndLoadUserSession();
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                await verifyAndLoadUserSession();
             } else {
                 loginScreen.classList.remove('hide');
+                sectionOnboardingScreen.classList.add('hide');
                 appWrapper.classList.add('hide');
             }
         });
 
         getStartedBtn.addEventListener('click', async () => {
-            const rollVal = rollInput.value.trim().toUpperCase();
+            const email = emailInput.value.trim();
+            const pass = passInput.value.trim();
+            const nameVal = nameInput.value.trim();
+            const rollVal = rollInput.value.trim();
 
-            if (!rollVal) {
-                loginError.innerText = "Please enter your Roll Number.";
+            if (!email || !pass) {
+                loginError.innerText = "Please enter both email and password.";
                 loginError.classList.remove('hide');
                 return;
             }
-
-            const studentMatch = studentDirectory[rollVal];
-            if (!studentMatch) {
-                loginError.innerText = "Roll Number not found in SRCC Database. Please check your spelling.";
-                loginError.classList.remove('hide');
-                return;
-            }
-
             loginError.classList.add('hide');
+
             const loginText = document.getElementById('login-text');
             const loginIcon = document.getElementById('login-icon');
-            loginText.innerText = "Loading Timetable...";
+            loginText.innerText = currentAuthMode === 'signin' ? "Signing In..." : "Creating Account...";
             loginIcon.className = "ph ph-spinner animate-spin text-base";
             getStartedBtn.classList.add('opacity-80', 'cursor-not-allowed');
             
             try {
-                // TEST MODE: Bypass Firebase Auth and use Roll Number as Document ID
-                currentUserUid = rollVal; 
+                let userCredential;
+                if (currentAuthMode === 'signin') {
+                    userCredential = await auth.signInWithEmailAndPassword(email, pass);
+                } else {
+                    if (!nameVal || !rollVal) {
+                        throw new Error("Please fill in your Name and Roll Number to register.");
+                    }
+                    userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+                    await db.collection('users').doc(userCredential.user.uid).set({
+                        name: nameVal,
+                        roll: rollVal,
+                        section: '',
+                        vac: '',
+                        sec: '',
+                        records: {},
+                        customClasses: {}
+                    });
+                }
                 
-                await db.collection('users').doc(currentUserUid).set({
-                    name: studentMatch.name,
-                    roll: rollVal,
-                    section: studentMatch.section,
-                    tutGroup: studentMatch.tutGroup,
-                    pracGroup: studentMatch.pracGroup,
-                    sec: studentMatch.sec,
-                    vac: studentMatch.vac
-                }, { merge: true });
-                
+                currentUserUid = userCredential.user.uid;
                 await verifyAndLoadUserSession();
             } catch (error) {
                 loginError.innerText = error.message;
                 loginError.classList.remove('hide');
-                loginText.innerText = "Load Timetable";
+                loginText.innerText = currentAuthMode === 'signin' ? "Sign In" : "Create Account";
                 loginIcon.className = "ph ph-arrow-right font-bold text-base";
                 getStartedBtn.classList.remove('opacity-80', 'cursor-not-allowed');
             }
         });
 
-        logoutBtn.addEventListener('click', () => {
+        saveOnboardingBtn.addEventListener('click', async () => {
+            const sectionVal = document.getElementById('onboarding-section-select').value;
+            const vacVal = document.getElementById('onboarding-vac-input').value.trim();
+            const secVal = document.getElementById('onboarding-sec-input').value.trim();
+
+            if (!sectionVal) {
+                onboardingError.innerText = "Please select your college section (A to N).";
+                onboardingError.classList.remove('hide');
+                return;
+            }
+            onboardingError.classList.add('hide');
+
+            cachedUserData.section = sectionVal;
+            cachedUserData.vac = vacVal || 'Not Specified';
+            cachedUserData.sec = secVal || 'Not Specified';
+
+            await db.collection('users').doc(currentUserUid).update({
+                section: cachedUserData.section,
+                vac: cachedUserData.vac,
+                sec: cachedUserData.sec
+            });
+
+            sectionOnboardingScreen.classList.add('fade-out');
+            setTimeout(() => {
+                sectionOnboardingScreen.classList.add('hide');
+                sectionOnboardingScreen.classList.remove('fade-out');
+                launchAppDashboard(cachedUserData);
+            }, 500);
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await auth.signOut();
             localStorage.clear();
-            location.reload(); // Instantly reset app state for testing new numbers
+            appWrapper.classList.add('hide');
+            sectionOnboardingScreen.classList.add('hide');
+            loginScreen.classList.remove('hide');
         });
 
         async function verifyAndLoadUserSession() {
@@ -840,36 +502,46 @@
             if (docSnap.exists) {
                 cachedUserData = docSnap.data();
             } else {
-                // Fallback for local testing without DB write completing
                 cachedUserData = {
-                    name: studentDirectory[currentUserUid].name,
-                    roll: currentUserUid,
-                    section: studentDirectory[currentUserUid].section,
-                    tutGroup: studentDirectory[currentUserUid].tutGroup,
-                    pracGroup: studentDirectory[currentUserUid].pracGroup,
-                    sec: studentDirectory[currentUserUid].sec,
-                    vac: studentDirectory[currentUserUid].vac,
+                    name: nameInput.value.trim() || 'Student',
+                    roll: rollInput.value.trim() || '23BC229',
+                    section: '',
+                    vac: '',
+                    sec: '',
                     records: {},
                     customClasses: {}
                 };
+                await docRef.set(cachedUserData);
             }
 
-            localStorage.setItem('trackr_user_name', cachedUserData.name);
-            localStorage.setItem('trackr_roll_number', cachedUserData.roll);
-            localStorage.setItem('trackr_section', cachedUserData.section);
-            localStorage.setItem('trackr_data', JSON.stringify(cachedUserData.records || {}));
-            localStorage.setItem('trackr_custom_classes', JSON.stringify(cachedUserData.customClasses || {}));
+            // Check if Section onboarding is missing
+            if (!cachedUserData.section) {
+                loginScreen.classList.add('hide');
+                sectionOnboardingScreen.classList.remove('hide');
+                return;
+            }
 
-            greetingText.innerText = `Hello, ${cachedUserData.name.split(' ')[0]} 👋`;
-            headerSectionBadge.innerText = `Sec ${cachedUserData.section} • ${cachedUserData.pracGroup}`;
-            
             loginScreen.classList.add('fade-out');
             setTimeout(() => {
                 loginScreen.classList.add('hide');
                 loginScreen.classList.remove('fade-out');
-                appWrapper.classList.remove('hide');
-                initApp();
+                launchAppDashboard(cachedUserData);
             }, 500);
+        }
+
+        function launchAppDashboard(userData) {
+            localStorage.setItem('trackr_user_name', userData.name);
+            localStorage.setItem('trackr_roll_number', userData.roll);
+            localStorage.setItem('trackr_section', userData.section);
+            localStorage.setItem('trackr_vac', userData.vac);
+            localStorage.setItem('trackr_sec', userData.sec);
+            localStorage.setItem('trackr_data', JSON.stringify(userData.records || {}));
+            localStorage.setItem('trackr_custom_classes', JSON.stringify(userData.customClasses || {}));
+
+            greetingText.innerText = `Hello, ${userData.name} 👋`;
+            headerSectionBadge.innerText = userData.section;
+            appWrapper.classList.remove('hide');
+            initApp();
         }
 
         async function saveUserDataToCloud() {
@@ -883,25 +555,42 @@
             });
         }
 
-        // --- DYNAMIC TIMETABLE FILTER ALGORITHM ---
-        function getPersonalizedTimetable(dayIndex) {
-            if (!cachedUserData || !cachedUserData.section) return [];
-
-            return masterTimetable.filter(cls => {
-                if (cls.day !== dayIndex) return false;
-
-                if (cls.section === cachedUserData.section) {
-                    if (cls.group === 'ALL') return true;
-                    if (cls.group === cachedUserData.tutGroup) return true;
-                    if (cls.group === cachedUserData.pracGroup) return true;
-                }
-
-                if (cls.type === 'SEC' && cls.courseCode === cachedUserData.sec) return true;
-                if (cls.type === 'VAC' && cls.courseCode === cachedUserData.vac) return true;
-
-                return false;
-            }).sort((a, b) => a.time.localeCompare(b.time));
-        }
+        const timetable = {
+            1: [
+                { id: 'mon1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Room R2' },
+                { id: 'mon2', time: '09:30 AM - 10:30 AM', subject: 'Business Mathematics', type: 'Lab', room: 'Room T48' }
+            ],
+            2: [
+                { id: 'tue1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lab', room: 'Library FF' },
+                { id: 'tue2', time: '09:30 AM - 10:30 AM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room PB3' },
+                { id: 'tue3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Lecture', room: 'Room R16' },
+                { id: 'tue4', time: '11:30 AM - 12:30 PM', subject: 'Business Mathematics', type: 'Lab', room: 'Room R36' },
+                { id: 'tue5', time: '12:30 PM - 01:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room PB3' }
+            ],
+            3: [
+                { id: 'wed1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Room CL1' },
+                { id: 'wed2', time: '09:30 AM - 10:30 AM', subject: 'Financial Management', type: 'Lab', room: 'Room T41' },
+                { id: 'wed3', time: '10:30 AM - 11:30 AM', subject: 'Environmental Science II', type: 'Class', room: 'Room R16' },
+                { id: 'wed4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room R10' }
+            ],
+            4: [
+                { id: 'thu1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R32' },
+                { id: 'thu2', time: '09:30 AM - 10:30 AM', subject: 'Environmental Science I', type: 'Class', room: 'Library FF' },
+                { id: 'thu3', time: '10:30 AM - 11:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room R16' },
+                { id: 'thu4', time: '11:30 AM - 12:30 PM', subject: 'Understanding Intl. Relations', type: 'GE Tutorial', room: 'Room T4' }
+            ],
+            5: [
+                { id: 'fri1', time: '08:30 AM - 09:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R34' },
+                { id: 'fri2', time: '09:30 AM - 10:30 AM', subject: 'Understanding Intl. Relations', type: 'GE Lecture', room: 'Room PB2' },
+                { id: 'fri3', time: '10:30 AM - 11:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Library FF' },
+                { id: 'fri4', time: '11:30 AM - 12:30 PM', subject: 'Principles of Marketing', type: 'Lecture', room: 'Room R21' },
+                { id: 'fri5', time: '12:30 PM - 01:30 PM', subject: 'Principles of Marketing', type: 'Tutorial', room: 'Room T14' }
+            ],
+            6: [
+                { id: 'sat1', time: '10:30 AM - 11:30 AM', subject: 'Financial Management', type: 'Lecture', room: 'Room R32' }
+            ],
+            0: []
+        };
 
         const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         
@@ -1028,7 +717,7 @@
             }
 
             for (let dayNum = 1; dayNum <= 6; dayNum++) {
-                const classes = getPersonalizedTimetable(dayNum);
+                const classes = timetable[dayNum];
                 if (!classes || classes.length === 0) continue;
 
                 const dayDateISO = getDateForDayOfWeek(dayNum);
@@ -1156,7 +845,7 @@
                     const dateStr = getLocalISOString(d);
                     if (dateStr >= SEMESTER_START_DATE) {
                         const dayIdx = d.getDay();
-                        const stdClasses = getPersonalizedTimetable(dayIdx);
+                        const stdClasses = timetable[dayIdx] || [];
                         const extClasses = customClasses[dateStr] || [];
                         const dayClasses = [...stdClasses, ...extClasses];
 
@@ -1301,7 +990,7 @@
                 return;
             }
 
-            const standardClasses = getPersonalizedTimetable(activeDayIndex);
+            const standardClasses = timetable[activeDayIndex] || [];
             const extraClasses = customClasses[activeDateString] || [];
             const classesToday = [...standardClasses, ...extraClasses];
 
@@ -1501,7 +1190,7 @@
             container.innerHTML = '';
 
             for (let i = 1; i <= 6; i++) {
-                const dayClasses = getPersonalizedTimetable(i);
+                const dayClasses = timetable[i];
                 if (dayClasses.length === 0) continue;
 
                 let dayHTML = `
@@ -1529,9 +1218,14 @@
             }
         }
 
-        // Test Mode Auto-Launch
         document.addEventListener('DOMContentLoaded', () => {
-            // Re-render handled automatically through logic flow
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    loginScreen.classList.remove('hide');
+                    sectionOnboardingScreen.classList.add('hide');
+                    appWrapper.classList.add('hide');
+                }
+            });
         });
     </script>
 </body>
