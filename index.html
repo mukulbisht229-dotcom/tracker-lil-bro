@@ -25,7 +25,6 @@
         .hide { display: none !important; }
         .fade-out { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
         
-        /* Smooth animation for switching tabs */
         @keyframes fadeSlideUp {
             0% { opacity: 0; transform: translateY(12px); }
             100% { opacity: 1; transform: translateY(0); }
@@ -34,7 +33,6 @@
             animation: fadeSlideUp 0.4s ease-out forwards;
         }
 
-        /* Popping Animation for Streak */
         @keyframes pop {
             0% { transform: scale(1); }
             50% { transform: scale(1.25); }
@@ -90,7 +88,6 @@
                     <i class="ph ph-moon text-xl dark:hidden"></i>
                     <i class="ph ph-sun text-xl hidden dark:block text-yellow-400"></i>
                 </button>
-                <!-- Gamified Streak Pill -->
                 <div id="streak-pill" class="flex items-center gap-1 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 px-3 py-1.5 rounded-full font-bold text-sm border border-orange-200 dark:border-orange-800/50 shadow-sm cursor-default">
                     <i class="ph-fill ph-fire text-lg"></i>
                     <span id="header-streak">0</span>
@@ -114,10 +111,7 @@
                     <span>Today's Classes</span>
                     <span id="day-badge" class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-md"></span>
                 </h2>
-                <div id="today-classes-container" class="space-y-4">
-                    <!-- Cards injected via JS -->
-                </div>
-                <!-- Extra Class Button -->
+                <div id="today-classes-container" class="space-y-4"></div>
                 <button onclick="openExtraClassModal()" class="w-full mt-6 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 btn-transition flex items-center justify-center gap-2">
                     <i class="ph ph-plus-circle text-lg"></i> Add Extra Class
                 </button>
@@ -139,10 +133,9 @@
                 </div>                
                 
                 <!-- Overall Progress -->
-                <div class="mb-8 p-5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 relative">
+                <div class="mb-6 p-5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 relative">
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Overall Attendance</h3>
-                        <!-- SHARE FLEX BUTTON -->
                         <button onclick="shareStats()" class="flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-md hover:scale-105 btn-transition">
                             <i class="ph ph-share-network"></i> Share 🚀
                         </button>
@@ -155,31 +148,40 @@
                         <div id="overall-bar" class="h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
                     <p class="text-xs text-gray-400 mt-3 flex items-center gap-1">
-                        <i class="ph ph-info"></i> Target: Maintain above 75% minimum.
+                        <i class="ph ph-info"></i> Target: Maintain above 75% minimum (65% absolute floor).
                     </p>
 
-                    <!-- TRIGGER FOR MONTHLY AUDIT MODAL -->
                     <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                        <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Want a deep-dive audit?</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Monthly Audit Records</span>
                         <button onclick="openMonthlyModal()" class="flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg hover:scale-105 btn-transition">
                             <i class="ph ph-calendar-blank"></i> Monthly Audit ➔
                         </button>
                     </div>
                 </div>
 
+                <!-- NEW: REPORT ANALYSIS & 65% RISK ENGINE PREVIEW -->
+                <div class="mb-8 p-5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white border border-slate-700 shadow-xl">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                            <i class="ph ph-chart-line-up text-lg"></i> Report Analysis (65% Risk Engine)
+                        </h3>
+                        <span class="text-[10px] bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded border border-amber-500/30">Live Preview</span>
+                    </div>
+                    <p class="text-xs text-slate-300 mb-4">Mathematical priority matrix tracking your proximity to the bare minimum 65% threshold and highlighting high-volatility subjects.</p>
+                    <div id="report-analysis-container" class="space-y-3">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
                 <!-- Subject Breakdown & Bunk Bank -->
                 <h3 class="font-semibold text-sm mb-4 uppercase tracking-wider text-gray-500">Subject Breakdown & Bunk Bank</h3>
-                <div id="subject-stats-container" class="space-y-5">
-                    <!-- Stats injected via JS -->
-                </div>
+                <div id="subject-stats-container" class="space-y-5"></div>
             </section>
 
             <!-- VIEW: Full Timetable -->
             <section id="timetable-view" class="view-section hide">
                 <h2 class="text-lg font-semibold mb-4">Weekly Schedule</h2>
-                <div id="full-timetable-container" class="space-y-6">
-                    <!-- Timetable injected via JS -->
-                </div>
+                <div id="full-timetable-container" class="space-y-6"></div>
             </section>
         </main>
     </div>
@@ -216,15 +218,12 @@
                     <i class="ph ph-x text-lg"></i>
                 </button>
             </div>
-            <div id="monthly-audit-container" class="space-y-6">
-                <!-- Dynamically populated monthly blocks -->
-            </div>
+            <div id="monthly-audit-container" class="space-y-6"></div>
             <button onclick="closeMonthlyModal()" class="w-full mt-6 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition">Close Audit</button>
         </div>
     </div>
 
     <script>
-        // --- ONBOARDING & AUTHENTICATION LOGIC ---
         const loginScreen = document.getElementById('login-screen');
         const appWrapper = document.getElementById('app-wrapper');
         const getStartedBtn = document.getElementById('get-started-btn');
@@ -295,7 +294,6 @@
             if(savedRoll) rollInput.value = savedRoll;
         });
 
-        // --- APP LOGIC (Timetable, Storage, UI) ---
         const timetable = {
             1: [
                 { id: 'mon1', time: '08:30 AM - 09:30 AM', subject: 'Business Mathematics', type: 'Lecture', room: 'Room R2' },
@@ -385,7 +383,6 @@
             });
         }
 
-        // MODAL CONTROLS
         window.openExtraClassModal = () => document.getElementById('extra-class-modal').classList.remove('hide');
         window.closeExtraClassModal = () => document.getElementById('extra-class-modal').classList.add('hide');
         
@@ -437,7 +434,6 @@
             }
         };
 
-        // RENDER MONTHLY AUDIT LOGIC
         function renderMonthlyAudit() {
             const container = document.getElementById('monthly-audit-container');
             container.innerHTML = '';
@@ -467,8 +463,7 @@
                 const firstDay = new Date(year, month - 1, 1);
                 const lastDay = new Date(year, month, 0);
 
-                const subjectData = {}; // { subject: { pastTotal: 0, pastAttended: 0, upcomingTotal: 0 } }
-
+                const subjectData = {};
                 let d = new Date(firstDay);
                 while (d <= lastDay) {
                     const dateStr = d.toISOString().split('T')[0];
@@ -525,7 +520,6 @@
                                 <span class="font-bold text-sm truncate max-w-[70%]" title="${sub}">${sub}</span>
                                 <span class="text-xs font-bold px-2 py-0.5 rounded ${badgeColor}">${data.pastTotal > 0 ? pct + '%' : 'No past classes'}</span>
                             </div>
-                            
                             <div class="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
                                 <div class="bg-blue-50/50 dark:bg-blue-900/20 p-2 rounded-md">
                                     <p class="text-gray-500 font-semibold uppercase text-[10px]">Completed Audit</p>
@@ -546,6 +540,63 @@
 
                 monthHtml += `</div></div>`;
                 container.innerHTML += monthHtml;
+            });
+        }
+
+        // RENDER REPORT ANALYSIS (65% RISK ENGINE)
+        function renderReportAnalysis(subjectStats) {
+            const container = document.getElementById('report-analysis-container');
+            container.innerHTML = '';
+
+            const subjects = Object.entries(subjectStats);
+            if (subjects.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-400">Run simulation or record attendance to activate report analysis.</p>';
+                return;
+            }
+
+            // Sort subjects by volatility (lowest total classes first = highest impact per absence)
+            subjects.sort((a, b) => a[1].total - b[1].total);
+
+            subjects.forEach(([subject, data]) => {
+                if (data.total === 0) return;
+
+                const subPct = Math.round((data.attended / data.total) * 100);
+                const min65 = Math.ceil(0.65 * data.total);
+                const buffer65 = data.attended - min65;
+                const isLowFreq = data.total < 25; // Volatility threshold
+
+                let statusBadge = '';
+                if (subPct >= 75) {
+                    statusBadge = `<span class="text-xs font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800/50">Safe (>75%)</span>`;
+                } else if (subPct >= 65) {
+                    statusBadge = `<span class="text-xs font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/50">65% Buffer Zone (${buffer65} skips left)</span>`;
+                } else {
+                    const needed = Math.ceil((0.65 * data.total - data.attended) / 0.35);
+                    statusBadge = `<span class="text-xs font-bold text-rose-400 bg-rose-950/60 px-2 py-0.5 rounded border border-rose-800/50">Critical (<65% • Need ${needed})</span>`;
+                }
+
+                const volatilityTag = isLowFreq 
+                    ? `<span class="text-[10px] bg-purple-950 text-purple-300 px-1.5 py-0.5 rounded border border-purple-800 font-semibold" title="Low total class count means every absence heavily spikes your percentage drop">⚡ High Volatility</span>`
+                    : `<span class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">Stable Core</span>`;
+
+                container.innerHTML += `
+                    <div class="bg-slate-800/80 p-3 rounded-lg border border-slate-700/80 flex flex-col gap-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="font-bold text-sm text-white block truncate max-w-[220px]" title="${subject}">${subject}</span>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-xs text-slate-400 font-medium">Total Classes: <strong class="text-slate-200">${data.total}</strong></span>
+                                    ${volatilityTag}
+                                </div>
+                            </div>
+                            <span class="text-base font-extrabold ${subPct >= 65 ? 'text-emerald-400' : 'text-rose-400'}">${subPct}%</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-700/60 text-xs">
+                            <span class="text-slate-400">65% Floor Target: <strong class="text-slate-200">${min65} attended</strong></span>
+                            ${statusBadge}
+                        </div>
+                    </div>
+                `;
             });
         }
 
@@ -696,6 +747,9 @@
                 overallStatus.innerText = 'Danger';
                 overallStatus.className = 'text-sm font-medium px-2 py-1 rounded bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400';
             }
+
+            // Render Report Analysis
+            renderReportAnalysis(subjectStats);
 
             const statsContainer = document.getElementById('subject-stats-container');
             statsContainer.innerHTML = '';
